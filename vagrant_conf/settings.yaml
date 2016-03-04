@@ -1,0 +1,6 @@
+---
+domain: 'vm.local'
+puppet_master_host: 'none'
+box_check_update: false
+post_up_message: 'All boxes Up'
+vm_gui: false

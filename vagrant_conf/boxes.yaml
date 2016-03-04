@@ -1,0 +1,11 @@
+---
+# Change below to fit project
+- name: 'ubuntu'
+  box: 'ubuntu/trusty64'
+  memory: 1024
+  provision_shell:
+    - 'provision/bootstrap-linux.sh'
+    - 'provision/bootstrap-puppet_agent.sh'
+    - 'provision/bootstrap-puppet_modules.sh'
+    - 'provision/puppet_apply.sh'
+  post_up_message: 'Server Up.'

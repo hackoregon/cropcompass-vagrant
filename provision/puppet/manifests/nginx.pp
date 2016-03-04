@@ -1,0 +1,6 @@
+#
+# NGINX
+#
+class { 'nginx':
+
+}
