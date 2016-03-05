@@ -1,6 +1,0 @@
-#
-# NGINX
-#
-class { 'nginx':
-
-}
