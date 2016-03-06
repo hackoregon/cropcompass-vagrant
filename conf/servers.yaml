@@ -1,0 +1,11 @@
+---
+##
+# Change box settings to fit project
+#  - Multiple boxes can be defined, but will need different names.
+- name: 'ubuntu'
+  box: 'ubuntu/trusty64'
+  memory: 1024
+  provision_shell:
+    - 'scripts/bootstrap-puppet.sh'
+    - 'scripts/puppet_apply.sh'
+  post_up_message: 'Server Up.  http://localhost:8080'
