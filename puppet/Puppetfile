@@ -15,15 +15,15 @@ mod 'puppetlabs-vcsrepo',
 
 mod 'puppetlabs-concat',
   :git => 'https://github.com/puppetlabs/puppetlabs-concat.git',
-  :ref => '1.2.5'
+  :ref => '2.1.0'
 
 mod 'puppetlabs-apt',
   :git => 'https://github.com/puppetlabs/puppetlabs-apt.git',
-  :ref => '2.2.1'
+  :ref => '2.2.2'
 
 mod 'puppetlabs-mysql',
   :git => 'https://github.com/puppetlabs/puppetlabs-mysql.git',
-  :ref => '3.6.2'
+  :ref => '3.7.0'
 
 mod 'puppetlabs-postgresql',
   :git => 'https://github.com/puppetlabs/puppetlabs-postgresql.git',
@@ -31,7 +31,7 @@ mod 'puppetlabs-postgresql',
 
 mod 'puppetlabs-python',
   :git => 'https://github.com/stankevich/puppet-python.git',
-  :ref => '1.10.0'
+  :ref => '1.11.0'
 
 mod 'puppetlabs-git',
   :git => 'https://github.com/puppetlabs/puppetlabs-git.git',
@@ -39,7 +39,7 @@ mod 'puppetlabs-git',
 
 mod 'puppetlabs-motd',
   :git => 'https://github.com/puppetlabs/puppetlabs-motd.git',
-  :ref => '1.3.0'
+  :ref => '1.4.0'
 
 mod 'jfryman-nginx',
   :git => 'https://github.com/jfryman/puppet-nginx.git',
