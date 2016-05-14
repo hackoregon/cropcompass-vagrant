@@ -1,0 +1,5 @@
+#! /bin/bash -v
+
+# reference http://stackoverflow.com/questions/36811863/cant-install-vagrant-plugins-in-ubuntu-16-04/36991648
+# run this if you get a Ruby error on Ubuntu 16.04 doing "vagrant plugin install"
+patch --directory /usr/lib/ruby/vendor_ruby/vagrant < vagrant-plugin.patch
