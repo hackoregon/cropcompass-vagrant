@@ -1,4 +1,4 @@
-# HackOregon UrbanDev Vagrant Environment
+# HackOregon Crop Compass Vagrant Environment
 
 Fork this repository to generate a local testing environment.
 
