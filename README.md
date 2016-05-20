@@ -6,12 +6,14 @@
 ```
 git clone git@github.com:hackoregon/cropcompass-vagrant
 cd cropcompass-vagrant
+git checkout buildathon
 ./build.bat
 ```
 3. On a Windows host do:
 ```
 git clone git@github.com:hackoregon/cropcompass-vagrant
 cd cropcompass-vagrant
+git checkout buildathon
 .\build.bat
 ```
 
