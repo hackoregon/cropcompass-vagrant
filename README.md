@@ -11,4 +11,4 @@
     ```
 3. Copy the `agtechdump2016-05-19.sql` dump file into `cropcompass-vagrant`. Then, on Windows, do `.\build.bat`. On MacOS or Linux, do `./build.bat`.
 
-This will take some time.
+This will take some time. If anything croaks, do a `vagrant ssh`. You can see all the log files in `~/logs`.
