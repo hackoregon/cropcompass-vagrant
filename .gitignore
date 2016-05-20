@@ -9,3 +9,5 @@ puppet/.librarian
 puppet/.tmp
 puppet/Puppetfile.lock
 capture/
+logs/
+cropcompass/
