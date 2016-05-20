@@ -6,15 +6,20 @@ mkdir -p ~/logs
 # set working directory
 cd /vagrant
 
+echo "Autoremoving unused packages"
+sudo apt-get autoremove -y > ~/logs/autoremove
+
 # PostgreSQL repository
 # http://www.postgresql.org/download/linux/ubuntu/
+echo "Attaching PostgreSQL package repositories"
 echo "deb http://apt.postgresql.org/pub/repos/apt/ trusty-pgdg main" > pgdg.list
 sudo mv pgdg.list /etc/apt/sources.list.d/pgdg.list
 wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add -
-
 sudo apt-get update > ~/logs/update
+
 echo "Upgrading Ubuntu"
 sudo apt-get -y upgrade > ~/logs/upgrade
+
 echo "Installing Ubuntu packages"
 sudo apt-get install -y \
   build-essential \
@@ -33,13 +38,17 @@ sudo apt-get install -y \
   vim-nox \
   virtualenvwrapper \
   > ~/logs/install
-echo "Autoremoving unused packages"
-sudo apt-get autoremove -y > ~/logs/autoremove
+
 echo "Creating the PostgreSQL 'vagrant' user and database"
 sudo su postgres -c "createuser -s vagrant"
 createdb vagrant
+
+echo "Restoring SQL dump"
 createuser alex
+psql < /vagrant/agtech*sql > ~/logs/psql
+
+echo "Creating 'cropcompass' virtualenv for Django"
 virtualenv -p /usr/bin/python3.4 ~/cropcompass
 source ~/cropcompass/bin/activate
-pip install --upgrade pip
-pip install -r /vagrant/scripts/requirements.txt 
+pip install --upgrade pip > ~/logs/pip
+pip install -r /vagrant/scripts/requirements.txt > ~/logs/requirements
