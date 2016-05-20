@@ -6,7 +6,7 @@
 ```
 git clone git@github.com:hackoregon/cropcompass-vagrant
 cd cropcompass-vagrant
-./build.bash
+./build.bat
 ```
 
 This will take some time.
