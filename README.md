@@ -2,8 +2,7 @@
 
 0. Find a place with wall power and reliable network connectivity.
 1. Install git, Vagrant and VirtualBox on your host machine.
-2. Do
-
+2. Open a host command window and do
     ```
     git clone git@github.com:hackoregon/cropcompass-vagrant
     cd cropcompass-vagrant
