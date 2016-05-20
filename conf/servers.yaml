@@ -6,6 +6,5 @@
   box: 'ubuntu/trusty64'
   memory: 1024
   provision_shell:
-    - 'scripts/bootstrap-puppet.sh'
-    - 'scripts/puppet_apply.sh'
+    - 'scripts/installs.bash'
   post_up_message: 'Server Up.  http://localhost:8080'
