@@ -10,3 +10,4 @@ puppet/.tmp
 puppet/Puppetfile.lock
 capture/
 *.sql
+logs/
