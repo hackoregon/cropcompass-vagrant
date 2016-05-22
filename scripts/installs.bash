@@ -15,6 +15,8 @@ echo "Attaching PostgreSQL package repositories"
 echo "deb http://apt.postgresql.org/pub/repos/apt/ trusty-pgdg main" > pgdg.list
 sudo mv pgdg.list /etc/apt/sources.list.d/pgdg.list
 wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add -
+
+echo "Syncing Ubuntu repositories"
 sudo apt-get update > ~/logs/update
 
 echo "Upgrading Ubuntu"
