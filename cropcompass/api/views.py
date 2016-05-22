@@ -17,7 +17,6 @@ in any order, including multiple values for the same key.
 """
 
 from django.core.exceptions import FieldError
-from django.db.models import Max
 from rest_framework import viewsets
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -72,8 +71,8 @@ def get_most_recent_year(model):
     If the model does not exist or it has no year field, None is returned.
     """
     try:
-        return model.objects.all().aggregate(Max('year'))['year__max']
-    except AttributeError:  # model does not exist
+        return model.objects.latest('year').year
+    except (model.DoesNotExist, AttributeError):  # model does not exist
         return None
     except FieldError:  # model does not have a year field
         return None
@@ -116,68 +115,53 @@ class MetadataViewSet(viewsets.ModelViewSet):
     serializer_class = MetadataSerializer
 
 
-class NassAnimalsSalesList(FilteredAPIView):
+class FilteredListView(FilteredAPIView):
+    """
+    Endpoint class allowing filtering by arbitrary params.
+
+    Example 1: GET /data/nass_animals_sales/
+    Returns all rows of the table in browsable API format, which is the default format, also specifiable by the query parameter "format=api".
+
+    Example 2:
+    GET /data/nass_animals_sales/?year=1997&
+        commodity=Corn&year=2002&format=json
+    Returns rows of Corn from 1997 and 2002 in JSON format.
+    """
+    filter_fields = ['commodity', 'year']
+    model = None
+    serializer = None
+
+    def get(self, request, format=None):
+        if request.query_params:
+            # Generate query filter dict
+            filters = self.query_dict(request.query_params, self.filter_fields)
+            # Generate queryset
+            qs = self.model.objects.filter(**filters)
+        else:
+            qs = self.model.objects.all()
+
+        serializer = self.serializer({
+            'error': None,
+            'rows': qs.count(),
+            'data': qs
+        })
+        return Response(serializer.data)
+
+
+class NassAnimalsSalesList(FilteredListView):
     """
     List animal sales.
     """
-    def get(self, request, format=None):
-        """List animal sales with optional filtering from nass_animals_sales.
-
-        Example 1: GET /data/nass_animals_sales/
-        Returns all rows of the table in browsable API format, which is the default format, also specifiable by the query parameter "format=api".
-
-        Example 2:
-        GET /data/nass_animals_sales/?year=1997&
-            commodity=Corn&year=2002&format=json
-        Returns rows of Corn from 1997 and 2002 in JSON format.
-        """
-        # Accepted fields for filtering output
-        FILTER_FIELDS = ['commodity', 'year']
-        if request.query_params:
-            # Generate query filter dictionary
-            query = self.query_dict(request.query_params, FILTER_FIELDS)
-            # Generate queryset
-            animal_sales = NassAnimalsSales.objects.filter(**query)
-        else:
-            animal_sales = NassAnimalsSales.objects.all()
-        serializer = NassAnimalsSalesSerializerWrapped({
-            "error": None,
-            "rows": animal_sales.count(),
-            "data": animal_sales
-        })
-        return Response(serializer.data)
+    model = NassAnimalsSales
+    serializer = NassAnimalsSalesSerializerWrapped
 
 
-class SubsidyDollarsList(FilteredAPIView):
+class SubsidyDollarsList(FilteredListView):
     """
     List subsidy dollars, optionally filtered on commodity and/or year.
     """
-    def get(self, request, format=None):
-        """List subsidy dollars with optional filtering from subsidy_dollars.
-
-        Example 1: GET /data/subsidy_dollars/
-        Returns all rows of the table in browsable API format, which is the default format, also specifiable by the query parameter "format=api".
-
-        Example 2:
-        GET /data/subsidy_dollars/?year=1997&
-            commodity=Corn&format=json
-        Returns rows of Corn from 1997 in JSON format.
-        """
-        # Accepted fields for filtering output
-        FILTER_FIELDS = ['commodity', 'year']
-        if request.query_params:
-            # Generate query filter dictionary
-            query = self.query_dict(request.query_params, FILTER_FIELDS)
-            # Generate queryset
-            subsidy_dollars = SubsidyDollars.objects.filter(**query)
-        else:
-            subsidy_dollars = SubsidyDollars.objects.all()
-        serializer = SubsidyDollarsSerializerWrapped({
-            "error": None,
-            "rows": subsidy_dollars.count(),
-            "data": subsidy_dollars
-        })
-        return Response(serializer.data)
+    model = SubsidyDollars
+    serializer = SubsidyDollarsSerializerWrapped
 
 
 class SubsidyDollarsTable(APIView):
