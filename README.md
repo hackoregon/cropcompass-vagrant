@@ -12,3 +12,10 @@
 3. Copy the `agtechdump2016-05-19.sql` dump file into `cropcompass-vagrant`. Then, on Windows, do `.\build.bat`. On MacOS or Linux, do `./build.bat`.
 
 This will take some time. If anything croaks, do a `vagrant ssh`. You can see all the log files in `~/logs`.
+
+## Starting the development server
+1. `vagrant ssh`. This will log you into the box as "vagrant"
+2. `source ~/cropcompass/bin/activate`. This will activate the virtual environment
+3. ``cd /vagrant/cropcompass`. This will put you in the server directory
+4. `python manange.py runserver`. This will start the development server listening on port 8000.
+5. Browse to `localhost:8000`.
