@@ -25,12 +25,14 @@ from .models import (
     Metadata,
     NassAnimalsSales,
     SubsidyDollars,
-    RegionLookup
+    RegionLookup,
+    NassCommodityArea
 )
 from .serializers import (
     MetadataSerializer,
     NassAnimalsSalesSerializerWrapped,
     SubsidyDollarsSerializerWrapped,
+    NassCommodityAreaSerializerWrapped
 )
 
 # Metadata dictionary of database tables keyed on the table_name. It will be
@@ -162,6 +164,11 @@ class SubsidyDollarsList(FilteredListView):
     """
     model = SubsidyDollars
     serializer = SubsidyDollarsSerializerWrapped
+
+
+class NassCommodityAreaList(FilteredListView):
+    model = NassCommodityArea
+    serializer = NassCommodityAreaSerializerWrapped
 
 
 class SubsidyDollarsTable(APIView):

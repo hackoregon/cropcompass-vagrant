@@ -26,5 +26,6 @@ urlpatterns = [
     url(r'^', include(router.urls)),
     url(r'^data/nass_animals_sales/$', views.NassAnimalsSalesList.as_view()),
     url(r'^data/subsidy_dollars/$', views.SubsidyDollarsList.as_view()),
+    url(r'^data/commodity_area/$', views.NassCommodityAreaList.as_view()),
     url(r'^table/subsidy_dollars/$', views.SubsidyDollarsTable.as_view()),
 ]
