@@ -20,4 +20,4 @@ This will take some time. If anything croaks, do a `vagrant ssh`. You can see al
 4. The first time you do this, you'll need to run migrations. Do `python manage.py migrate`.
 5. Stop nginx: `sudo service nginx stop`.
 4. `python manange.py runserver 0.0.0.0:8000`. This will start the development server listening on port 8000.
-5. Browse to `localhost:8000`.
+5. Browse to <localhost:8000>.
