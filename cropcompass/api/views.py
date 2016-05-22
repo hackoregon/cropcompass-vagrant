@@ -16,7 +16,6 @@ value in every table row. Multiple "key=value" pairs may be provided,
 in any order, including multiple values for the same key.
 """
 
-from django.contrib.auth.models import User, Group
 from django.core.exceptions import FieldError
 from django.db.models import Max
 from rest_framework import viewsets
@@ -30,8 +29,6 @@ from .models import (
     RegionLookup
 )
 from .serializers import (
-    UserSerializer,
-    GroupSerializer,
     MetadataSerializer,
     NassAnimalsSalesSerializerWrapped,
     SubsidyDollarsSerializerWrapped,
@@ -109,22 +106,6 @@ class FilteredAPIView(APIView):
         # Augment dictionary keys with __in for looking up list inclusion
         query = {key + '__in': vals for key, vals in filter_params.items()}
         return query
-
-
-class UserViewSet(viewsets.ModelViewSet):
-    """
-    API endpoint that allows users to be viewed or edited.
-    """
-    queryset = User.objects.all().order_by('-date_joined')
-    serializer_class = UserSerializer
-
-
-class GroupViewSet(viewsets.ModelViewSet):
-    """
-    API endpoint that allows groups to be viewed or edited.
-    """
-    queryset = Group.objects.all()
-    serializer_class = GroupSerializer
 
 
 class MetadataViewSet(viewsets.ModelViewSet):
