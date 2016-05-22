@@ -44,7 +44,7 @@ Vagrant.configure(2) do |config|
       #  - These should be pushed into the box settings file.
       #
       srv.vm.network "forwarded_port", guest: 80, host: 8080, auto_correct: true
-      srv.vm.network "forwarded_port", guest: 5432, host: 55432, auto_correct: true
+      #srv.vm.network "forwarded_port", guest: 5432, host: 55432, auto_correct: true
 
       ##
       # Provider: Virtual Box
