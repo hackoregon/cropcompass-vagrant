@@ -18,5 +18,5 @@ This will take some time. If anything croaks, do a `vagrant ssh`. You can see al
 2. `source ~/cropcompass/bin/activate`. This will activate the virtual environment
 3. ``cd /vagrant/cropcompass`. This will put you in the server directory
 4. The first time you do this, you'll need to run migrations. Do `python manage.py migrate`.
-4. `python manange.py runserver`. This will start the development server listening on port 8000.
+4. `python manange.py runserver 0.0.0.0:8000`. This will start the development server listening on port 8000.
 5. Browse to `localhost:8000`.
