@@ -9,7 +9,7 @@
     cd cropcompass-vagrant
     git checkout buildathon
     ```
-3. Copy the `agtechdump2016-05-19.sql` dump file into `cropcompass-vagrant`. Then, on Windows, do `.\build.bat`. On MacOS or Linux, do `./build.bat`.
+3. On Windows, do `.\build.bat`. On MacOS or Linux, do `./build.bat`.
 
 This will take some time. If anything croaks, do a `vagrant ssh`. You can see all the log files in `~/logs`.
 
