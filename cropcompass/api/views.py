@@ -133,14 +133,18 @@ class FilteredListView(FilteredAPIView):
     model = None
     serializer = None
 
+    def __init__(self, **kwargs):
+        self.queryset = self.queryset if hasattr(self, 'queryset') else self.model.objects.all()
+        super(FilteredAPIView, self).__init__(**kwargs)
+
     def get(self, request, format=None):
         if request.query_params:
             # Generate query filter dict
             filters = self.query_dict(request.query_params, self.filter_fields)
             # Generate queryset
-            qs = self.model.objects.filter(**filters)
+            qs = self.queryset.filter(**filters)
         else:
-            qs = self.model.objects.all()
+            qs = self.queryset.all()
 
         serializer = self.serializer({
             'error': None,
@@ -167,8 +171,12 @@ class SubsidyDollarsList(FilteredListView):
 
 
 class NassCommodityAreaList(FilteredListView):
+    """
+    List commodities with area. Exclude rows where acres == null
+    """
     model = NassCommodityArea
     serializer = NassCommodityAreaSerializerWrapped
+    queryset = model.objects.filter(acres__isnull=False)
 
 
 class SubsidyDollarsTable(APIView):
