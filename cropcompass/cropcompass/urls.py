@@ -31,5 +31,7 @@ urlpatterns = [
     url(r'^data/commodity_area/$', views.NassCommodityAreaList.as_view()),
     url(r'^table/subsidy_dollars/$', views.SubsidyDollarsTable.as_view()),
     url(r'^table/commodity_area/$', views.CommodityAreaTable.as_view()),
-    url(r'^admin/', include(admin.site.urls))
+    url(r'^admin/', include(admin.site.urls)),
+    url(r'^table/subsidy_dollars_top5fips/$', views.SubsidyDollarsTopFiveCounties.as_view()),
+    url(r'^table/subsidy_dollars_top5crops/$', views.SubsidyDollarsTopFiveCommodities.as_view()),
 ]

@@ -20,7 +20,7 @@ from django.core.exceptions import FieldError
 from rest_framework import viewsets
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from collections import OrderedDict
+from collections import OrderedDict, Counter
 from .models import (
     Metadata,
     NassAnimalsSales,
@@ -174,6 +174,7 @@ class NassCommodityAreaList(FilteredListView):
     """
     List commodities with area. Exclude rows where acres == null
     """
+    filter_fields = ['fips', 'commodity', 'year']
     model = NassCommodityArea
     serializer = NassCommodityAreaSerializerWrapped
     queryset = model.objects.filter(acres__isnull=False)
@@ -192,6 +193,62 @@ class NassCommodityAreaList(FilteredListView):
 #             pass
 #
 #         return data
+class SubsidyDollarsTopFiveCounties(APIView):
+    """
+    Top five counties subsidy summed over all commodities
+    """
+    def get(self, request, format=None):
+        if not metadata_dict:
+            fetch_metadata(Metadata)
+        if not region_to_fips:
+            fetch_region_lookup(RegionLookup)
+        # Get the most recent year for subsidy dollars
+        latest_year = get_most_recent_year(SubsidyDollars)
+        data = {
+            'error': None,
+            'unit': metadata_dict['subsidy_dollars']['unit'],
+            'year': latest_year,
+            'description': 'Subsidy dollars for top five counties',
+            'data': []
+        }
+        sq = SubsidyDollars.objects.filter(
+            year=latest_year
+        )
+        subs_c = Counter()
+        for subs in sq:
+            subs_c[subs.fips] = subs_c.get(subs.fips, 0) + subs.subsidy_dollars
+        top_five_comm = dict(subs_c.most_common(5))
+        data['data'].append(top_five_comm)
+        return Response(data)
+
+
+class SubsidyDollarsTopFiveCommodities(APIView):
+    """
+    Top five commodities subsidy summed over all counties
+    """
+    def get(self, request, format=None):
+        if not metadata_dict:
+            fetch_metadata(Metadata)
+        if not region_to_fips:
+            fetch_region_lookup(RegionLookup)
+        # Get the most recent year for subsidy dollars
+        latest_year = get_most_recent_year(SubsidyDollars)
+        data = {
+            'error': None,
+            'unit': metadata_dict['subsidy_dollars']['unit'],
+            'year': latest_year,
+            'description': 'Subsidy dollars for top five commodities',
+            'data': []
+        }
+        sq = SubsidyDollars.objects.filter(
+            year=latest_year
+        )
+        subs_c = Counter()
+        for subs in sq:
+            subs_c[subs.commodity] = subs_c.get(subs.commodity, 0) + subs.subsidy_dollars
+        top_five_comm = dict(subs_c.most_common(5))
+        data['data'].append(top_five_comm)
+        return Response(data)
 
 
 class SubsidyDollarsTable(APIView):
