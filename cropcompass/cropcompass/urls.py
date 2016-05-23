@@ -16,6 +16,8 @@ Including another URLconf
 from django.conf.urls import url, include
 from rest_framework import routers
 from api import views
+from django.contrib import admin
+
 
 router = routers.DefaultRouter()
 router.register(r'metadata', views.MetadataViewSet)
@@ -29,4 +31,5 @@ urlpatterns = [
     url(r'^data/commodity_area/$', views.NassCommodityAreaList.as_view()),
     url(r'^table/subsidy_dollars/$', views.SubsidyDollarsTable.as_view()),
     url(r'^table/commodity_area/$', views.CommodityAreaTable.as_view()),
+    url(r'^admin/', include(admin.site.urls))
 ]
