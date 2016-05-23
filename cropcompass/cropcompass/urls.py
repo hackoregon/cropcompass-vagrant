@@ -28,4 +28,5 @@ urlpatterns = [
     url(r'^data/subsidy_dollars/$', views.SubsidyDollarsList.as_view()),
     url(r'^data/commodity_area/$', views.NassCommodityAreaList.as_view()),
     url(r'^table/subsidy_dollars/$', views.SubsidyDollarsTable.as_view()),
+    url(r'^table/commodity_area/$', views.CommodityAreaTable.as_view()),
 ]

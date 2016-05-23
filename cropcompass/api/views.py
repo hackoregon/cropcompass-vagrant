@@ -247,3 +247,91 @@ class SubsidyDollarsTable(APIView):
             })
             self.fill_in_data(subsidy_dollars, data)
         return Response(data)
+
+class CommodityAreaTable(APIView):
+    """
+    Table of (commodity -> area) for Oregon or selected county.
+    """
+    @staticmethod
+    def fill_in_data(query, data_array):
+        """Populate data array from the query"""
+        for row in query:
+            data_array['data'].append({
+                'commodity': row.commodity,
+                'acres': row.acres
+            })
+
+        commodity_list = []
+        for item in data_array['data']:
+            commodity_list.append(item['commodity'])
+
+        commodity_list = set(commodity_list)
+        tempdata = []
+
+        for commodity in commodity_list:
+            acres = [item['acres'] for item in data_array['data'] if item['commodity'] == commodity]
+            tempdata.append({
+                'commodity': commodity,
+                'acres': sum(acres)
+            })
+
+        data_array['data'] = tempdata
+
+    def get(self, request, format=None):
+        """Return table of county or Oregon state (commodity -> subsidy
+        dollars) for the most recent year for which data is available.
+
+        Example 1: GET /table/subsidy_dollars/?format=json
+        Returns the table (commodity -> subsidy dollars) for all of Oregon
+        in JSON format.
+
+        Example 2: GET /table/subsidy_dollars/?county=Linn&format=json
+        Returns the table (commodity -> subsidy dollars) for Linn County
+        in JSON format.
+
+        Selecting a commodity or a year has no effect on the returned
+        subsidy data.
+
+        Use format=api or no query parameter to get browsable api results.
+        """
+        # Fetch metadata and region lookup tables from database if necessary
+        if not metadata_dict:
+            fetch_metadata(Metadata)
+        if not region_to_fips:
+            fetch_region_lookup(RegionLookup)
+        # Get the most recent year for subsidy dollars
+        latest_year = get_most_recent_year(NassCommodityArea)
+        data = {
+            'error': None,
+            'unit': "acres",
+            'year': latest_year,
+            'description': 'Commodity area for each commodity in {}',
+            'data': []
+        }
+        # If a county has been selected in the query parameters
+        if 'county' in request.query_params:
+            county = request.query_params['county']
+            commodity_area = NassCommodityArea.objects.filter(
+                year=latest_year,
+                fips=region_to_fips[county],
+                acres__isnull=False
+                )
+            data['description'] = data['description'].format(county) + ' County'
+            data.update({
+                'rows': commodity_area.count(),
+                'region': county,
+            })
+            self.fill_in_data(commodity_area, data)
+        # If no county is specified, return Oregon total acreas
+        else:
+            commodity_area = NassCommodityArea.objects.filter(
+                year=latest_year,
+                fips=41000,
+                acres__isnull=False)
+            data['description'] = data['description'].format('Oregon')
+            data.update({
+                'rows': commodity_area.count(),
+                'region': 'Oregon (Statewide)',
+            })
+            self.fill_in_data(commodity_area, data)
+        return Response(data)
