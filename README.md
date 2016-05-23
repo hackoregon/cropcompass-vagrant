@@ -9,7 +9,7 @@
     cd cropcompass-vagrant
     git checkout buildathon
     ```
-3. Copy the `agtechdump2016-05-19.sql` dump file into `cropcompass-vagrant`. Then, on Windows, do `.\build.bat`. On MacOS or Linux, do `./build.bat`.
+3. On Windows, do `.\build.bat`. On MacOS or Linux, do `./build.bat`.
 
 This will take some time. If anything croaks, do a `vagrant ssh`. You can see all the log files in `~/logs`.
 
@@ -20,4 +20,4 @@ This will take some time. If anything croaks, do a `vagrant ssh`. You can see al
 4. The first time you do this, you'll need to run migrations. Do `python manage.py migrate`.
 5. Stop nginx: `sudo service nginx stop`.
 4. `python manange.py runserver 0.0.0.0:8000`. This will start the development server listening on port 8000.
-5. Browse to `localhost:8000`.
+5. Browse to <http://localhost:8000>.
