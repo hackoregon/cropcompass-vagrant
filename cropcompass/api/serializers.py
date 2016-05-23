@@ -2,6 +2,7 @@ from api.models import (
     Metadata,
     NassAnimalsSales,
     SubsidyDollars,
+    NassCommodityArea
 )
 from rest_framework import serializers
 
@@ -52,3 +53,20 @@ class SubsidyDollarsSerializerWrapped(serializers.Serializer):
     error = serializers.CharField(max_length=200, allow_blank=True)
     rows = serializers.IntegerField()
     data = SubsidyDollarsSerializer(many=True)
+
+
+class NassCommodityAreaSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = NassCommodityArea
+        fields = (
+            'commodity',
+            'year',
+            'fips',
+            'acres'
+        )
+
+
+class NassCommodityAreaSerializerWrapped(serializers.Serializer):
+    error = serializers.CharField(max_length=200, allow_blank=True)
+    rows = serializers.IntegerField()
+    data = NassCommodityAreaSerializer(many=True)
