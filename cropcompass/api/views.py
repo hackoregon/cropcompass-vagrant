@@ -318,7 +318,7 @@ class CommodityAreaTable(APIView):
                 )
             data['description'] = data['description'].format(county) + ' County'
             data.update({
-                'rows': commodity_area.count(),
+                'rows': commodity_area.distinct("commodity").count(),
                 'region': county,
             })
             self.fill_in_data(commodity_area, data)
@@ -326,11 +326,11 @@ class CommodityAreaTable(APIView):
         else:
             commodity_area = NassCommodityArea.objects.filter(
                 year=latest_year,
-                fips=41000,
+                fips__startswith=41,
                 acres__isnull=False)
             data['description'] = data['description'].format('Oregon')
             data.update({
-                'rows': commodity_area.count(),
+                'rows': commodity_area.distinct("commodity").count(),
                 'region': 'Oregon (Statewide)',
             })
             self.fill_in_data(commodity_area, data)
