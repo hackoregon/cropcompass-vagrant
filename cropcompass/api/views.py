@@ -179,18 +179,34 @@ class NassCommodityAreaList(FilteredListView):
     queryset = model.objects.filter(acres__isnull=False)
 
 
+# class TableView(APIView):
+#     @staticmethod
+#     def prepare_data(query, fields=(), **kwargs):
+#         """ Retrieve specific data from queryset """
+#         from django.db.models import QuerySet
+#         assert isinstance(query, QuerySet)
+#
+#         data = query.values(*fields)
+#
+#         if kwargs.get('unique', False):
+#             pass
+#
+#         return data
+
+
 class SubsidyDollarsTable(APIView):
     """
     Table of (commodity -> subsidy dollars) for Oregon or selected county.
     """
     @staticmethod
-    def fill_in_data(query, data_array):
+    def fill_in_data(query, fields=(), **kwargs):
         """Populate data array from the query"""
-        for row in query:
-            data_array['data'].append({
-                'commodity': row.commodity,
-                'subsidy_dollars': row.subsidy_dollars
-            })
+        data = query.values(*fields)
+
+        if kwargs.get('unique', False):
+            pass
+
+        return data
 
     def get(self, request, format=None):
         """Return table of county or Oregon state (commodity -> subsidy
@@ -234,7 +250,8 @@ class SubsidyDollarsTable(APIView):
                 'rows': subsidy_dollars.count(),
                 'region': county,
             })
-            self.fill_in_data(subsidy_dollars, data)
+            data['data'] = self.fill_in_data(subsidy_dollars,
+                                             fields=('commodity', 'subsidy_dollars'))
         # If no county is specified, return Oregon total subsidies
         else:
             subsidy_dollars = SubsidyDollars.objects.filter(
@@ -245,8 +262,10 @@ class SubsidyDollarsTable(APIView):
                 'rows': subsidy_dollars.count(),
                 'region': 'Oregon (Statewide)',
             })
-            self.fill_in_data(subsidy_dollars, data)
+            data['data'] = self.fill_in_data(subsidy_dollars,
+                                             fields=('commodity', 'subsidy_dollars'))
         return Response(data)
+
 
 class CommodityAreaTable(APIView):
     """
