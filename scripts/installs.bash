@@ -37,6 +37,7 @@ sudo apt-get install -y \
   python-pip \
   python-virtualenv \
   python3-dev \
+  python3-pip \
   vim-nox \
   virtualenvwrapper \
   > ~/logs/install
@@ -51,7 +52,12 @@ wget --quiet https://www.dropbox.com/s/t6t1r3x6a4lp0zi/agtechdump2016-05-19.sql
 psql < /vagrant/agtech*sql > ~/logs/psql
 
 echo "Creating 'cropcompass' virtualenv for Django"
-virtualenv -p /usr/bin/python3.4 ~/cropcompass
-source ~/cropcompass/bin/activate
+echo "export VIRTUALENVWRAPPER_PYTHON=/usr/bin/python3" >> ~/.bashrc
+echo "export WORKON_HOME=~/Env" >> ~/.bashrc
+echo "source /usr/local/bin/virtualenvwrapper.sh" >> ~/.bashrc
+source ~/.bashrc
+mkvirtualenv cropcompass
+
+echo "Installing Django requirements"
 pip install --upgrade pip > ~/logs/pip
 pip install -r /vagrant/scripts/requirements.txt > ~/logs/requirements
