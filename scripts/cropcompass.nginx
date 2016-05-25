@@ -1,0 +1,14 @@
+server {
+    listen 8000;
+    server_name 0.0.0.0;
+
+    location = /favicon.ico { access_log off; log_not_found off; }
+    location /static/ {
+        root /home/user/cropcompass;
+    }
+
+    location / {
+        include         uwsgi_params;
+        uwsgi_pass      unix:/home/vagrant/cropcompass/cropcompass.sock;
+    }
+}
