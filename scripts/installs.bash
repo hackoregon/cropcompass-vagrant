@@ -10,3 +10,4 @@ cd /vagrant
 /vagrant/scripts/postgresql.bash
 /vagrant/scripts/virtualenvwrapper.bash
 /vagrant/scripts/django.bash
+/vagrant/scripts/uwsgi.bash
