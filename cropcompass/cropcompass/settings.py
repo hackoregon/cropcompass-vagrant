@@ -149,6 +149,3 @@ SHELL_PLUS = 'ipython'
 #     from .local_settings import *
 # except ImportError:
 #     pass
-
-# from https://www.digitalocean.com/community/tutorials/how-to-serve-django-applications-with-uwsgi-and-nginx-on-ubuntu-14-04
-STATIC_ROOT = os.path.join(BASE_DIR, "static/")
