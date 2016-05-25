@@ -10,5 +10,5 @@ pip install -r /vagrant/scripts/requirements.txt > ~/logs/requirements 2>&1
 
 echo "Running migrations"
 pushd /vagrant/cropcompass
-python3 manage.py migrate
+python3 manage.py migrate > ~/logs/migrate 2>&1
 popd
