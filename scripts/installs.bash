@@ -6,7 +6,8 @@ mkdir -p ~/logs
 # set working directory
 cd /vagrant
 
-/vagrant/scripts/ubuntu.bash
-/vagrant/scripts/postgresql.bash
-/vagrant/scripts/virtualenvwrapper.bash
-/vagrant/scripts/django.bash
+echo `date`; /vagrant/scripts/ubuntu.bash
+echo `date`; /vagrant/scripts/postgresql.bash
+echo `date`; /vagrant/scripts/virtualenvwrapper.bash
+echo `date`; /vagrant/scripts/django.bash
+echo `date`
