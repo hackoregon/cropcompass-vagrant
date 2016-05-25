@@ -21,4 +21,24 @@ To check whether the server is running, type `vagrant global-status` on the host
 1. `vagrant ssh`. This will log you into the box as "vagrant".
 2. `workon cropcompass`. This will activate the Crop Compass virtual environment.
 3. The log files are in `~/logs`.
-4. The running Django code is in `~/cropcompass`. The scripts copy it there from `/vagrant/cropcompass`. So if you make changes in the running Django code, remember to copy them back!
+
+## Working on the Django code
+First of all, Vagrant mounts the host `cropcompass-vagrant` Git repository (where the Vagrantfile lives) onto `/vagrant` in the guest. So you can change files in the repository or in the guest and they'll be changed in both places. Of course, you can only interact with GitHub from the host.
+
+Second, during the provisioning, the script that installs Django copies the Django API code from `/vagrant/cropcompass` to `/home/vagrant/cropcompass`. The server points to this copy!
+
+So if you want to work on the Django code:
+1. `sudo service nginx stop`. This will stop the server.
+2. `workon cropcompass`. This will activate the Python virtualenv.
+3. Go into `/vagrant/cropcompass`. As noted above, this is mirrored on the host.
+4. `./manage.py runserver 0.0.0.0:8000 &`. This will start a development server. Browse to `localhost:8000` to see your results.
+5. Work on the Django code. When you have the results you want, do the following:
+    1. Stop the development server: `kill -TERM %1`.
+    2. Back up and replace the Django code the server is using:
+    ```
+    cd ~vagrant
+    rm -fr cropcompass.bak; mv cropcompass cropcompass.bak
+    cp -rp /vagrant/cropcompass ~vagrant
+    ```
+    3. Restart the server: `sudo service nginx start`.
+6. On the host, do your Git operations for the modified code.
