@@ -13,9 +13,12 @@
 
 This will take some time. If anything croaks, do a `vagrant ssh`. You can see all the log files in `~/logs`.
 
-## Starting the development server
-1. `vagrant ssh`. This will log you into the box as "vagrant"
-2. `source ~/cropcompass/bin/activate`. This will activate the virtual environment
-3. ``cd /vagrant/cropcompass`. This will put you in the server directory
-4. `python manange.py runserver 0.0.0.0:8000`. This will start the development server listening on port 8000.
-5. Browse to <http://localhost:8000>.
+When the scripts finish, the Crop Compass Django app will be running. Browse to `localhost:8000` to test it.
+
+To stop the server, type `vagrant halt` on the host. To start it again type `vagrant reload`.
+
+## Troubleshooting
+1. `vagrant ssh`. This will log you into the box as "vagrant".
+2. `workon cropcompass`. This will activate the Crop Compass virtual environment.
+3. The log files are in `~/logs`.
+4. The running Django code is in `~/cropcompass`. The scripts copy it there from `/vagrant/cropcompass`. So if you make changes in the running Django code, remember to copy them back!
