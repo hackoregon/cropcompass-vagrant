@@ -11,3 +11,4 @@ cd /vagrant
 /vagrant/scripts/virtualenvwrapper.bash
 /vagrant/scripts/django.bash
 /vagrant/scripts/uwsgi.bash
+/vagrant/scripts/nginx.bash
