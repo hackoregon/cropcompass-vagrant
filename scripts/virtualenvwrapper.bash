@@ -2,7 +2,7 @@
 
 # https://virtualenvwrapper.readthedocs.io/en/latest/index.html
 echo `date` "Installing virtualenv wrapper"
-sudo pip3 install virtualenv virtualenvwrapper
+sudo pip3 install virtualenv virtualenvwrapper > ~/logs/virtualenvwrapper 2>&1
 echo "set bg=dark" >> ~/.vimrc
 echo "export VIRTUALENVWRAPPER_PYTHON=/usr/bin/python3" >> ~/.bashrc
 echo "export WORKON_HOME=~/Env" >> ~/.bashrc
