@@ -28,10 +28,11 @@ First of all, Vagrant mounts the host `cropcompass-vagrant` Git repository (wher
 Second, during the provisioning, the script that installs Django copies the Django API code from `/vagrant/cropcompass` to `/home/vagrant/cropcompass`. The server points to this copy!
 
 So if you want to work on the Django code:
+
 1. `sudo service nginx stop`. This will stop the server.
 2. `workon cropcompass`. This will activate the Python virtualenv.
-3. Go into `/vagrant/cropcompass`. As noted above, this is mirrored on the host.
-4. `./manage.py runserver 0.0.0.0:8000 &`. This will start a development server. Browse to `localhost:8000` to see your results.
+3. `cd /vagrant/cropcompass`. As noted above, this directory is mirrored on the host.
+4. `./manage.py runserver 0.0.0.0:8000 &`. This will start a development server in the background. Browse to `localhost:8000` to see your results.
 5. Work on the Django code. When you have the results you want, do the following:
     1. Stop the development server: `kill -TERM %1`.
     2. Back up and replace the Django code the server is using:
@@ -40,5 +41,5 @@ So if you want to work on the Django code:
     rm -fr cropcompass.bak; mv cropcompass cropcompass.bak
     cp -rp /vagrant/cropcompass ~vagrant
     ```
-    3. Restart the server: `sudo service nginx start`.
-6. On the host, do your Git operations for the modified code.
+6. Restart the server: `sudo service nginx start`.
+7. On the host, do your Git operations for the modified code.
