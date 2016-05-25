@@ -8,7 +8,7 @@ source ~/Env/cropcompass/bin/activate
 pip install --upgrade pip > ~/logs/pip 2>&1
 pip install -r /vagrant/scripts/requirements.txt > ~/logs/requirements 2>&1
 
-echo `date` "Initializing cropcompass project"
+echo `date` "Copying Django application code from '/vagrant/cropcompass' to '~vagrant'"
 cp -rp /vagrant/cropcompass ~
 
 pushd ~/cropcompass
