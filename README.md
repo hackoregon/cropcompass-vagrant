@@ -15,7 +15,7 @@ This will take some time. If anything croaks, do a `vagrant ssh`. You can see al
 
 When the scripts finish, the Crop Compass Django app will be running. Browse to `localhost:8000` to test it.
 
-To stop the server, type `vagrant halt` on the host. To start it again type `vagrant reload`.
+To check whether the server is running, type `vagrant global-status` on the host. To stop the server, type `vagrant halt`. To start it again type `vagrant reload`.
 
 ## Troubleshooting
 1. `vagrant ssh`. This will log you into the box as "vagrant".
