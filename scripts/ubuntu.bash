@@ -21,6 +21,7 @@ sudo apt-get install -y \
   build-essential \
   libncurses5-dev \
   libreadline-dev \
+  nginx \
   postgresql-9.4 \
   postgresql-9.4-postgis-2.2 \
   postgresql-client-9.4 \
