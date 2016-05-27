@@ -7,7 +7,7 @@
     ```
     git clone git@github.com:hackoregon/cropcompass-vagrant
     cd cropcompass-vagrant
-    git checkout master
+    git checkout django-offline
     ```
 3. On Windows, do `.\build.bat`. On MacOS or Linux, do `./build.bat`.
 
