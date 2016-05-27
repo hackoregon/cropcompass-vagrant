@@ -9,6 +9,8 @@
     cd cropcompass-vagrant
     git checkout django-offline
     ```
+    
+    Note that on Windows, some versions of Git will convert the line endings of text files from Unix (LF only) to DOS/Windows (CR-LF) format. If your Git does this, the Vagrant provisioning step will die a horrible death. I'm looking for an in-Vagrant fix, but meanwhile, make sure your Git is configured to not modify any line endings.
 3. On Windows, do `.\build.bat`. On MacOS or Linux, do `./build.bat`.
 
 This will take some time. If anything croaks, do a `vagrant ssh`. You can see all the log files in `~/logs`.
@@ -35,6 +37,6 @@ If you need to work on the Django code inside the box, do the following:
     * git config --global user.email "you@example.com"
     * git config --global user.name "Your Name"
 
-5. Do your thing, using the browser to verify your changes. If you need to re-collect the static files, do `cd ~/cropcompass; python3 manage.py collectstatic`. You might have to restart `nginx`: `sudo service nginx restart`.
+5. Do your thing, using the browser to verify your changes. If you need to re-collect the static files, do `cd ~/cropcompass; python3 manage.py collectstatic`. You might have to restart nginx: `sudo service nginx restart`.
 6. The repo was cloned via the HTTPS endpoint. To push your changes, you'll need to enter your GitHub ID and GitHub password.
 
