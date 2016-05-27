@@ -22,11 +22,11 @@ sudo apt-get install -y \
   libncurses5-dev \
   libreadline-dev \
   nginx \
-  postgresql-9.4 \
-  postgresql-9.4-postgis-2.2 \
-  postgresql-client-9.4 \
-  postgresql-contrib-9.4 \
-  postgresql-server-dev-9.4 \
+  postgresql-9.5 \
+  postgresql-9.5-postgis-2.2 \
+  postgresql-client-9.5 \
+  postgresql-contrib-9.5 \
+  postgresql-server-dev-9.5 \
   python-dev \
   python-pip \
   python3-dev \
