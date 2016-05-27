@@ -2,8 +2,9 @@
 
 echo `date` "Cloning Django application code from GitHub to '~vagrant'"
 pushd ~vagrant
-git clone https://github.com/hackoregon/cropcompass-django.git cropcompass \
+git clone https://github.com/hackoregon/cropcompass-django.git \
   > ~/logs/django-clone 2>&1
+mv cropcompass-django/cropcompass ~vagrant
 popd
 
 echo `date` "Making cropcompass virtualenv"
