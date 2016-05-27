@@ -37,6 +37,6 @@ If you need to work on the Django code inside the box, do the following:
     * git config --global user.email "you@example.com"
     * git config --global user.name "Your Name"
 
-5. Do your thing, using the browser to verify your changes. If you need to re-collect the static files, do `cd ~/cropcompass; python3 manage.py collectstatic`. You might have to restart nginx: `sudo service nginx restart`.
-6. The repo was cloned via the HTTPS endpoint. To push your changes, you'll need to enter your GitHub ID and GitHub password.
-
+5. Do your thing, using the browser to verify your changes. You might have to restart nginx: `sudo service nginx restart`.
+    If you need to re-collect the static files, do `cd ~/cropcompass; python3 manage.py collectstatic`.
+6. The repo was cloned via the HTTPS endpoint. To push your changes, you'll need to enter your GitHub ID and GitHub password. If you have two-factor enabled, you'll probably need your 2FA device handy.
