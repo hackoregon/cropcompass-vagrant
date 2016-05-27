@@ -23,7 +23,7 @@ To check whether the server is running, type `vagrant global-status` on the host
 3. The log files are in `~/logs`.
 
 ## Working on the Django code
-The Django code lives online in the GitHub repo <https://github.com/hackoregon/cropcompass-vagrant/tree/django-offboard>. During the provisioning step a `git clone` fetches this to `~vagrant`, where the nginx / uWSGI configuration expects to find it. As part of this process, the static files are collected.
+The Django code lives online in the GitHub repo <https://github.com/hackoregon/cropcompass-django-offboard>. During the provisioning step a `git clone` fetches this to `~vagrant`, where the nginx / uWSGI configuration expects to find it. As part of this process, the static files are collected.
 
 If you need to work on the Django code inside the box, do the following:
 1. If you're not in the `Crop Compass` team on GitHub, have someone add you to that team.
