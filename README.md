@@ -15,7 +15,47 @@
 
 This will take some time. If anything croaks, do a `vagrant ssh`. You can see all the log files in `~/logs`.
 
-When the scripts finish, the Crop Compass Django app will be running. Browse to <http://localhost:8000> to test it.
+When the scripts finish, the Crop Compass Django app will be running. Browse to <http://localhost:8000> to test it. Also, do a `vagrant ssh`. The first time, you will see
+
+```
+$ vagrant ssh
+Welcome to Ubuntu 14.04.4 LTS (GNU/Linux 3.13.0-86-generic x86_64)
+
+ * Documentation:  https://help.ubuntu.com/
+
+  System information as of Sat May 28 00:19:48 UTC 2016
+
+  System load:  0.97              Processes:           82
+  Usage of /:   3.5% of 39.34GB   Users logged in:     0
+  Memory usage: 12%               IP address for eth0: 10.0.2.15
+  Swap usage:   0%
+
+  Graph this data and manage this system at:
+    https://landscape.canonical.com/
+
+  Get cloud support with Ubuntu Advantage Cloud Guest:
+    http://www.ubuntu.com/business/services/cloud
+
+0 packages can be updated.
+0 updates are security updates.
+
+
+virtualenvwrapper.user_scripts creating /home/vagrant/Env/premkproject
+virtualenvwrapper.user_scripts creating /home/vagrant/Env/postmkproject
+virtualenvwrapper.user_scripts creating /home/vagrant/Env/initialize
+virtualenvwrapper.user_scripts creating /home/vagrant/Env/premkvirtualenv
+virtualenvwrapper.user_scripts creating /home/vagrant/Env/postmkvirtualenv
+virtualenvwrapper.user_scripts creating /home/vagrant/Env/prermvirtualenv
+virtualenvwrapper.user_scripts creating /home/vagrant/Env/postrmvirtualenv
+virtualenvwrapper.user_scripts creating /home/vagrant/Env/predeactivate
+virtualenvwrapper.user_scripts creating /home/vagrant/Env/postdeactivate
+virtualenvwrapper.user_scripts creating /home/vagrant/Env/preactivate
+virtualenvwrapper.user_scripts creating /home/vagrant/Env/postactivate
+virtualenvwrapper.user_scripts creating /home/vagrant/Env/get_env_details
+vagrant@ubuntu:~$ 
+```
+
+The `virtualenvwrapper` lines will only appear the first time you `vagrant ssh` into the box. There is only one Python virtual environment - to activate it type `workon cropcompass`. See <https://www.digitalocean.com/community/tutorials/how-to-serve-django-applications-with-uwsgi-and-nginx-on-ubuntu-14-04> for the details on the nginx / uWSGI configuration if you need to change anything.
 
 To check whether the server is running, type `vagrant global-status` on the host. To stop the server, type `vagrant halt`. To start it again type `vagrant reload`.
 
