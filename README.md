@@ -7,7 +7,7 @@
     ```
     git clone git@github.com:hackoregon/cropcompass-vagrant
     cd cropcompass-vagrant
-    git checkout django-offline
+    git checkout master
     ```
     
     Note that on Windows, some versions of Git will convert the line endings of text files from Unix (LF only) to DOS/Windows (CR-LF) format. If your Git does this, the Vagrant provisioning step will die a horrible death. I'm looking for an in-Vagrant fix, but meanwhile, make sure your Git is configured to not modify any line endings.
