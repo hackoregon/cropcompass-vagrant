@@ -19,6 +19,7 @@ sudo apt-get -y upgrade > ~/logs/upgrade 2>&1
 echo `date` "Installing Ubuntu packages"
 sudo apt-get install -y \
   build-essential \
+  git \
   libncurses5-dev \
   libreadline-dev \
   nginx \
