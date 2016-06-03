@@ -5,7 +5,6 @@ then
   echo `date` "Django app already provisioned - exiting"
   exit
 fi
-exit
 
 echo `date` "Copying Django app from '/vagrant/django-app' to '~vagrant/cropcompass'"
 cp -rp /vagrant/django-app ~vagrant/cropcompass
