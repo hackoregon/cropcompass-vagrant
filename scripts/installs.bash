@@ -14,3 +14,4 @@ cd /vagrant
 /vagrant/scripts/django-app.bash
 /vagrant/scripts/uwsgi.bash
 /vagrant/scripts/nginx.bash
+echo `date` "Provisioning complete - logs are in ~vagrant/logs"
