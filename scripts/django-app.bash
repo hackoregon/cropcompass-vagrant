@@ -1,25 +1,14 @@
 #!/bin/bash
 
-if [ -e ~/Env/cropcompass ]
+if [ -d ~vagrant/cropcompass ]
 then
-  echo `date` "Django already installed - exiting"
+  echo `date` "Django app already provisioned - exiting"
   exit
 fi
+exit
 
-echo `date` "Making and activating 'cropcompass' virtualenv"
-mkdir -p ~/Env
-virtualenv -p /usr/bin/python3 ~/Env/cropcompass > ~/logs/virtualenv 2>&1
-source ~/Env/cropcompass/bin/activate
-
-echo `date` "Installing Django requirements"
-pip install --upgrade pip > ~/logs/pip 2>&1
-pip install -r /vagrant/scripts/requirements.txt > ~/logs/requirements 2>&1
-
-echo `date` "Cloning Django application code from GitHub to '~vagrant'"
-pushd ~vagrant
-git clone https://github.com/hackoregon/cropcompass-django.git cropcompass \
-  > ~/logs/django-clone 2>&1
-popd
+echo `date` "Copying Django app from '/vagrant/django-app' to '~vagrant/cropcompass'"
+cp -rp /vagrant/django-app ~vagrant/cropcompass
 
 pushd ~/cropcompass
 echo `date` "Running migrations"

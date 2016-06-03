@@ -11,5 +11,6 @@ cd /vagrant
 /vagrant/scripts/pg_restores.bash
 /vagrant/scripts/virtualenvwrapper.bash
 /vagrant/scripts/django.bash
+/vagrant/scripts/django-app.bash
 /vagrant/scripts/uwsgi.bash
 /vagrant/scripts/nginx.bash
