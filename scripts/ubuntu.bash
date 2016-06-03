@@ -1,16 +1,16 @@
 #!/bin/bash
 
+if [ -e /etc/apt/sources.list.d/pgdg.list ]
+then
+  echo `date` "Ubuntu provisioning already done - exiting"
+  exit
+fi
+
 echo `date` "Autoremoving unused packages"
 sudo apt-get autoremove -y > ~/logs/autoremove 2>&1
 
 # PostgreSQL repository
 # http://www.postgresql.org/download/linux/ubuntu/
-if [ -e /etc/apt/sources.list.d/pgdg.list ]
-then
-  echo "Ubuntu provisioning already done - exiting"
-  exit
-fi
-
 echo `date` "Attaching PostgreSQL package repositories"
 echo "deb http://apt.postgresql.org/pub/repos/apt/ trusty-pgdg main" > pgdg.list
 sudo mv pgdg.list /etc/apt/sources.list.d/pgdg.list

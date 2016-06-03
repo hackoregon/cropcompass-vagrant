@@ -2,7 +2,7 @@
 
 if [ -e ~vagrant/.postgresql ]
 then
-  echo "PostgreSQL provisioning already done - exiting"
+  echo `date` "PostgreSQL provisioning already done - exiting"
   exit
 fi
 

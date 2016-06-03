@@ -2,7 +2,7 @@
 
 if [ -e /usr/local/bin/virtualenvwrapper.sh ]
 then
-  echo "virtualenvwrapper already installed - exiting"
+  echo `date` "virtualenvwrapper already installed - exiting"
   exit
 fi
 

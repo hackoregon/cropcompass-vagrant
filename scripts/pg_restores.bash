@@ -2,7 +2,7 @@
 
 if [ -e ~vagrant/.pg_restores ]
 then
-  echo "Secondary data already restored - exiting"
+  echo `date` "Secondary data already restored - exiting"
   exit
 fi
 echo `date` "Restoring secondary data"
