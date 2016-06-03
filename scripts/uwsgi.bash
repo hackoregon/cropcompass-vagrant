@@ -1,6 +1,6 @@
 #!/bin/bash
 
-if [ -e ~/logs/uwsgi ]
+if [ -e /etc/init/uwsgi.conf ]
 then
   echo `date` "uWSGI already installed - exiting"
   exit
