@@ -1,6 +1,7 @@
 #!/bin/bash
 
 if [ -e /etc/nginx/sites-available/cropcompass ]
+then
   echo `date` "nginx already configured - exiting"
   exit
 fi
