@@ -11,3 +11,4 @@ puppet/Puppetfile.lock
 capture/
 *.sql
 logs/
+cropcompass/*
