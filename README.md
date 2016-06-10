@@ -69,3 +69,6 @@ To check whether the server is running, type `vagrant global-status` on the host
 1. `vagrant ssh`. This will log you into the box as "vagrant".
 2. `workon cropcompass`. This will activate the Crop Compass virtual environment.
 3. The log files are in `~/logs`.
+
+## Host-side troubleshooting
+Do a `vagrant global-status`. This will list all the boxes and what they're doing. Note that if a box is running when you reboot your host, Vagrant may or may not save it cleanly and may or may not restart it when the host comes back up. On my Linux host it does seem to do a clean save and restore, but to be safe you should do a `vagrant halt` before shutting down the host and a `vagrant up` after bringing the host back up.
