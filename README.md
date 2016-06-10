@@ -48,12 +48,14 @@ vagrant@ubuntu:~$
 
 The `virtualenvwrapper` lines will only appear the first time you `vagrant ssh` into the box. There is only one Python virtual environment - to activate it type `workon cropcompass`. See <https://www.digitalocean.com/community/tutorials/how-to-serve-django-applications-with-uwsgi-and-nginx-on-ubuntu-14-04> for the details on the nginx / uWSGI configuration if you need to change anything.
 
-To check whether the server is running, type `vagrant global-status` on the host. To stop the server, type `vagrant halt`. To start it again type `vagrant reload`.
+To check whether the server is running, type `vagrant global-status` on the host. To stop the server, type `vagrant halt`. To start it again type `vagrant up`. To reboot it type `vagrant reload`.
+
+## Operational notes
+`vagrant global-status` will list all the boxes and what they're doing.
+
+Note that if a box is running when you shut down or reboot your host, Vagrant may or may not save it cleanly and may or may not restart it when the host comes back up. To be safe, do a `vagrant halt` before shutting down or rebooting the host and a `vagrant up` after bringing the host back up.
 
 ## Troubleshooting
 1. `vagrant ssh`. This will log you into the box as "vagrant".
 2. `workon cropcompass`. This will activate the Crop Compass virtual environment.
 3. The log files are in `~/logs`.
-
-## Host-side troubleshooting
-Do a `vagrant global-status`. This will list all the boxes and what they're doing. Note that if a box is running when you reboot your host, Vagrant may or may not save it cleanly and may or may not restart it when the host comes back up. On my Linux host it does seem to do a clean save and restore, but to be safe you should do a `vagrant halt` before shutting down the host and a `vagrant up` after bringing the host back up.
