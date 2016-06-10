@@ -8,7 +8,6 @@ cd /vagrant
 
 /vagrant/scripts/ubuntu.bash
 /vagrant/scripts/postgresql.bash
-/vagrant/scripts/pg_restores.bash
 /vagrant/scripts/virtualenvwrapper.bash
 /vagrant/scripts/django.bash
 /vagrant/scripts/django-app.bash
