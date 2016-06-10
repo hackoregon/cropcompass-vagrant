@@ -10,7 +10,11 @@
     git checkout fixprovisionerrors
     ```
     
-    If you don't need to make changes to the repo, clone it with `git clone https://github.com/hackoregon/cropcompass-vagrant`.
+    If you don't need to make changes to the repo, clone it with 
+
+    ```
+    git clone https://github.com/hackoregon/cropcompass-vagrant
+    ```
     
     Note that on Windows, some versions of Git will convert the line endings of text files from Unix (LF only) to DOS/Windows (CR-LF) format. If your Git does this, the Vagrant provisioning step will die a horrible death. I'm looking for an in-Vagrant fix, but meanwhile, make sure your Git is configured to not modify any line endings.
 3. On Windows, do `.\build.bat`. On MacOS or Linux, do `./build.bat`.
