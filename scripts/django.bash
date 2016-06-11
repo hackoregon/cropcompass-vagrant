@@ -7,7 +7,7 @@ git clone https://github.com/hackoregon/cropcompass-django.git cropcompass \
 popd
 
 echo `date` "Making and activating 'cropcompass' virtualenv"
-mkdir -p ~/Env
+mkdir -p /home/vagrant/Env
 virtualenv -p /usr/bin/python3 ~/Env/cropcompass > ~/logs/virtualenv 2>&1
 source ~/Env/cropcompass/bin/activate
 
@@ -15,7 +15,7 @@ echo `date` "Installing Django requirements"
 pip install --upgrade pip > ~/logs/pip 2>&1
 pip install -r /vagrant/scripts/requirements.txt > ~/logs/requirements 2>&1
 
-pushd /home/vagrant/cropcompass
+pushd ~/cropcompass
 echo `date` "Running migrations"
 python3 manage.py migrate > ~/logs/migrate 2>&1
 echo `date` "Collecting static assets"

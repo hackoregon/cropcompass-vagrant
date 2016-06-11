@@ -33,4 +33,4 @@ sudo apt-get install -y \
   python3-dev \
   python3-pip \
   vim-nox \
-  > ~/logs/install 2>&1
+  > /home/ubuntu/logs/install 2>&1
