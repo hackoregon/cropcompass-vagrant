@@ -16,6 +16,7 @@ value in every table row. Multiple "key=value" pairs may be provided,
 in any order, including multiple values for the same key.
 """
 
+from django.db.models import Sum
 from django.core.exceptions import FieldError
 from rest_framework import viewsets
 from rest_framework.views import APIView
@@ -180,19 +181,6 @@ class NassCommodityAreaList(FilteredListView):
     queryset = model.objects.filter(acres__isnull=False)
 
 
-# class TableView(APIView):
-#     @staticmethod
-#     def prepare_data(query, fields=(), **kwargs):
-#         """ Retrieve specific data from queryset """
-#         from django.db.models import QuerySet
-#         assert isinstance(query, QuerySet)
-#
-#         data = query.values(*fields)
-#
-#         if kwargs.get('unique', False):
-#             pass
-#
-#         return data
 class SubsidyDollarsTopFiveCounties(APIView):
     """
     Top five counties subsidy summed over all commodities
@@ -382,16 +370,18 @@ class CommodityAreaTable(APIView):
             'unit': "acres",
             'year': latest_year,
             'description': 'Commodity area for each commodity in {}',
-            'data': []
+            'data': [],
+            'total_acres': 0
         }
+        qs = NassCommodityArea.objects.filter(
+            acres__isnull=False,
+            year=latest_year
+        ).exclude(commodity='Total Acres')
+
         # If a county has been selected in the query parameters
         if 'county' in request.query_params:
             county = request.query_params['county']
-            commodity_area = NassCommodityArea.objects.filter(
-                year=latest_year,
-                fips=region_to_fips[county],
-                acres__isnull=False
-                )
+            commodity_area = qs.filter(fips=region_to_fips[county])
             data['description'] = data['description'].format(county) + ' County'
             data.update({
                 'rows': commodity_area.distinct("commodity").count(),
@@ -400,14 +390,12 @@ class CommodityAreaTable(APIView):
             self.fill_in_data(commodity_area, data)
         # If no county is specified, return Oregon total acreas
         else:
-            commodity_area = NassCommodityArea.objects.filter(
-                year=latest_year,
-                fips__startswith=41,
-                acres__isnull=False)
+            commodity_area = qs.filter(fips__startswith=41)
             data['description'] = data['description'].format('Oregon')
             data.update({
                 'rows': commodity_area.distinct("commodity").count(),
                 'region': 'Oregon (Statewide)',
             })
             self.fill_in_data(commodity_area, data)
+        data['total_acres'] = commodity_area.aggregate(Sum('acres'))['acres__sum']
         return Response(data)
