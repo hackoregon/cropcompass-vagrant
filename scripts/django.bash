@@ -15,7 +15,7 @@ echo `date` "Installing Django requirements"
 pip install --upgrade pip > ~/logs/pip 2>&1
 pip install -r /vagrant/scripts/requirements.txt > ~/logs/requirements 2>&1
 
-pushd ~/cropcompass
+pushd /home/vagrant/cropcompass
 echo `date` "Running migrations"
 python3 manage.py migrate > ~/logs/migrate 2>&1
 echo `date` "Collecting static assets"
