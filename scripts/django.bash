@@ -7,7 +7,7 @@ then
 fi
 
 echo `date` "Making and activating 'cropcompass' virtualenv"
-mkdir -p ~/Env
+mkdir -p /home/vagrant/Env
 virtualenv -p /usr/bin/python3 ~/Env/cropcompass > ~/logs/virtualenv 2>&1
 source ~/Env/cropcompass/bin/activate
 
