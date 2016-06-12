@@ -10,14 +10,14 @@
     ```
     git clone https://github.com/hackoregon/cropcompass-vagrant
     cd cropcompass-vagrant
-    git checkout db20160609
+    git checkout znmeb-is-collecting-commits
     ```
     
     If you ***do*** need to make changes to the code, clone it with 
     ```
     git clone git@github.com:hackoregon/cropcompass-vagrant
     cd cropcompass-vagrant
-    git checkout db20160609
+    git checkout znmeb-is-collecting-commits
     ```
     
 3. On Windows, do `.\build.bat`. On MacOS or Linux, do `./build.bat`.
