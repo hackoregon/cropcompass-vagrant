@@ -312,7 +312,7 @@ class SubsidyDollarsTable(APIView):
         return Response(data)
 
 
-class CommodityAreaTable(APIView):
+class CommodityAreaTable(FilteredAPIView):
     """
     Table of (commodity -> area) for Oregon or selected county.
     """
@@ -378,24 +378,27 @@ class CommodityAreaTable(APIView):
             year=latest_year
         ).exclude(commodity='Total Acres')
 
-        # If a county has been selected in the query parameters
-        if 'county' in request.query_params:
-            county = request.query_params['county']
-            commodity_area = qs.filter(fips=region_to_fips[county])
-            data['description'] = data['description'].format(county) + ' County'
+        query_params = request.query_params.copy()  # create mutable copy
+        if 'county' in query_params:
+            # remove county from query_params because of region_to_fips mapping
+            county = query_params.pop('county')[0]
+            qs = qs.filter(fips=region_to_fips[county])
             data.update({
-                'rows': commodity_area.distinct("commodity").count(),
+                'description': data['description'].format(county) + ' County',
                 'region': county,
             })
-            self.fill_in_data(commodity_area, data)
-        # If no county is specified, return Oregon total acreas
         else:
-            commodity_area = qs.filter(fips__startswith=41)
-            data['description'] = data['description'].format('Oregon')
             data.update({
-                'rows': commodity_area.distinct("commodity").count(),
-                'region': 'Oregon (Statewide)',
+                'description': data['description'].format('Oregon'),
+                'region': 'Oregon (Statewide)'
             })
-            self.fill_in_data(commodity_area, data)
-        data['total_acres'] = commodity_area.aggregate(Sum('acres'))['acres__sum']
+
+        # enable filtering on all fields
+        all_fields = [f.name for f in NassCommodityArea._meta.fields]
+        filters = self.query_dict(query_params, all_fields)
+        # data['filters'] = filters
+        qs = qs.filter(**filters)
+
+        self.fill_in_data(qs, data)
+        data['total_acres'] = qs.aggregate(Sum('acres'))['acres__sum']
         return Response(data)
