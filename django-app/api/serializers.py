@@ -7,7 +7,7 @@ from api.models import (
 from rest_framework import serializers
 
 
-class MetadataSerializer(serializers.HyperlinkedModelSerializer):
+class MetadataSerializer(serializers.ModelSerializer):
     class Meta:
         model = Metadata
         fields = (
@@ -19,6 +19,12 @@ class MetadataSerializer(serializers.HyperlinkedModelSerializer):
             'source_name',
             'source_link'
         )
+
+
+class MetadataSerializerWrapped(serializers.Serializer):
+    error = serializers.CharField(max_length=200, allow_blank=True)
+    rows = serializers.IntegerField()
+    data = MetadataSerializer(many=True)
 
 
 class NassAnimalsSalesSerializer(serializers.ModelSerializer):

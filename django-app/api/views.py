@@ -18,9 +18,10 @@ in any order, including multiple values for the same key.
 
 from django.db.models import Sum
 from django.core.exceptions import FieldError
-from rest_framework import viewsets
 from rest_framework.views import APIView
+from rest_framework.renderers import BrowsableAPIRenderer, JSONRenderer
 from rest_framework.response import Response
+from rest_framework.reverse import reverse as api_reverse
 from collections import OrderedDict, Counter
 from .models import (
     Metadata,
@@ -30,7 +31,7 @@ from .models import (
     NassCommodityArea
 )
 from .serializers import (
-    MetadataSerializer,
+    MetadataSerializerWrapped,
     NassAnimalsSalesSerializerWrapped,
     SubsidyDollarsSerializerWrapped,
     NassCommodityAreaSerializerWrapped
@@ -110,12 +111,33 @@ class FilteredAPIView(APIView):
         return query
 
 
-class MetadataViewSet(viewsets.ModelViewSet):
+class EndpointIndexView(APIView):
     """
-    API endpoint that allows metadata to be viewed or edited.
+Cropcompass API endpoints can be accessed at the URLs below. Add "format=json"
+query parameter to get JSON response.
     """
-    queryset = Metadata.objects.all()
-    serializer_class = MetadataSerializer
+    renderer_classes = (BrowsableAPIRenderer, JSONRenderer)
+
+    # def get_renderers(self):
+    #     return [renderer() for renderer in self.renderer_classes]
+
+    def get(self, request, format=None):
+        """
+        Return a list of API endpoints with their documentation.
+        """
+        endpoints = [
+            ('List metadata for DB tables', 'metadata'),
+            ('List commodities with area - row view', 'nass_commodity_area_list'),
+            ('List commodities with area - table view', 'nass_commodity_area_table'),
+            ('Subsidy Dollars - row view', 'subsidy_dollars_data'),
+            ('Subsidy Dollars - table view', 'subsidy_dollars_table'),
+            ('Subsidy Dollars - top 5 counties', 'subsidy_dollars_top_counties'),
+            ('Subsidy Dollars - top 5 commodities', 'subsidy_dollars_top_commodities'),
+        ]
+        endpoint_dict = OrderedDict()
+        for endpoint_name, path in endpoints:
+            endpoint_dict[endpoint_name] = api_reverse(path, request=request)
+        return Response(endpoint_dict)
 
 
 class FilteredListView(FilteredAPIView):
@@ -155,6 +177,14 @@ class FilteredListView(FilteredAPIView):
         return Response(serializer.data)
 
 
+class MetadataView(FilteredListView):
+    """
+    List metadata for available DB tables.
+    """
+    model = Metadata
+    serializer = MetadataSerializerWrapped
+
+
 class NassAnimalsSalesList(FilteredListView):
     """
     List animal sales.
@@ -166,6 +196,12 @@ class NassAnimalsSalesList(FilteredListView):
 class SubsidyDollarsList(FilteredListView):
     """
     List subsidy dollars, optionally filtered on commodity and/or year.
+
+    Use query parameter 'format=json' to return JSON data, otherwise browsable
+    api format response is returned.
+
+    No filtering returns all data in table. Filtering is possible for year
+    and commodity.
     """
     model = SubsidyDollars
     serializer = SubsidyDollarsSerializerWrapped
@@ -241,7 +277,17 @@ class SubsidyDollarsTopFiveCommodities(APIView):
 
 class SubsidyDollarsTable(APIView):
     """
-    Table of (commodity -> subsidy dollars) for Oregon or selected county.
+    Table of county or Oregon state (commodity -> subsidy
+    dollars) for the most recent year for which data is available.
+
+    Use query parameter 'format=json' to return JSON data, otherwise browsable
+    api format response is returned.
+
+    No filtering returns Oregon statewide data. Filtering is possible for
+    county.
+
+    Example:
+    /table/subsidy_dollars/?county=Linn&format=json
     """
     @staticmethod
     def fill_in_data(query, fields=(), **kwargs):
