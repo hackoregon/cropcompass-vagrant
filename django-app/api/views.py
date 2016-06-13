@@ -143,14 +143,6 @@ query parameter to get JSON response.
 class FilteredListView(FilteredAPIView):
     """
     Endpoint class allowing filtering by arbitrary params.
-
-    Example 1: GET /data/nass_animals_sales/
-    Returns all rows of the table in browsable API format, which is the default format, also specifiable by the query parameter "format=api".
-
-    Example 2:
-    GET /data/nass_animals_sales/?year=1997&
-        commodity=Corn&year=2002&format=json
-    Returns rows of Corn from 1997 and 2002 in JSON format.
     """
     filter_fields = ['commodity', 'year']
     model = None
@@ -193,23 +185,13 @@ class NassAnimalsSalesList(FilteredListView):
     serializer = NassAnimalsSalesSerializerWrapped
 
 
-class SubsidyDollarsList(FilteredListView):
-    """
-    List subsidy dollars, optionally filtered on commodity and/or year.
-
-    Use query parameter 'format=json' to return JSON data, otherwise browsable
-    api format response is returned.
-
-    No filtering returns all data in table. Filtering is possible for year
-    and commodity.
-    """
-    model = SubsidyDollars
-    serializer = SubsidyDollarsSerializerWrapped
-
-
 class NassCommodityAreaList(FilteredListView):
     """
     List commodities with area. Exclude rows where acres == null
+
+    By default all data in the table is returned, row-wise. Filtered results by year, fips, and commodity may be specified by providing query parameters
+
+    Example filtering: "?commodity=Tomatoes&fips=41005&year=2012&year=2007" to get Tomatoes data from county (fips=41005) for both 2012 and 2007.
     """
     filter_fields = ['fips', 'commodity', 'year']
     model = NassCommodityArea
@@ -217,68 +199,93 @@ class NassCommodityAreaList(FilteredListView):
     queryset = model.objects.filter(acres__isnull=False)
 
 
-class SubsidyDollarsTopFiveCounties(APIView):
+class CommodityAreaTable(FilteredAPIView):
     """
-    Top five counties subsidy summed over all commodities
+    Table of (commodity -> area) for Oregon or selected county and only from the most recent year in the DB (Section B).
     """
+    @staticmethod
+    def fill_in_data(query):
+        """Populate data array from the query"""
+
+        data_array = query.values('commodity', 'acres')
+        commodity_list = query.distinct('commodity').values_list('commodity', flat=True)
+
+        tempdata = []
+
+        for commodity in commodity_list:
+            acres = data_array.filter(commodity=commodity).aggregate(Sum('acres'))['acres__sum']
+            tempdata.append({
+                'commodity': commodity,
+                'acres': acres
+            })
+
+        return tempdata
+
     def get(self, request, format=None):
+        """Return table of county or Oregon state (commodity -> farm area) for the most recent year for which data is available.
+        """
+        # Fetch metadata and region lookup tables from database if necessary
         if not metadata_dict:
             fetch_metadata(Metadata)
         if not region_to_fips:
             fetch_region_lookup(RegionLookup)
-        # Get the most recent year for subsidy dollars
-        latest_year = get_most_recent_year(SubsidyDollars)
+        # Get the most recent year for commodity area
+        latest_year = get_most_recent_year(NassCommodityArea)
         data = {
             'error': None,
-            'unit': metadata_dict['subsidy_dollars']['unit'],
+            'unit': "acres",
             'year': latest_year,
-            'description': 'Subsidy dollars for top five counties',
-            'data': []
+            'description': 'Commodity area for each commodity in {}',
+            'data': [],
+            'total_acres': 0
         }
-        sq = SubsidyDollars.objects.filter(
+        qs = NassCommodityArea.objects.filter(
+            acres__isnull=False,
             year=latest_year
-        )
-        subs_c = Counter()
-        for subs in sq:
-            subs_c[subs.fips] = subs_c.get(subs.fips, 0) + subs.subsidy_dollars
-        top_five_comm = dict(subs_c.most_common(5))
-        data['data'].append(top_five_comm)
+        ).exclude(commodity='Total Acres')
+
+        query_params = request.query_params.copy()  # create mutable copy
+        if 'county' in query_params:
+            # remove county from query_params because of region_to_fips mapping
+            county = query_params.pop('county')[0]
+            qs = qs.filter(fips=region_to_fips[county])
+            data.update({
+                'description': data['description'].format(county) + ' County',
+                'region': county,
+            })
+        else:
+            data.update({
+                'description': data['description'].format('Oregon'),
+                'region': 'Oregon (Statewide)'
+            })
+
+        # enable filtering on all fields
+        all_fields = [f.name for f in NassCommodityArea._meta.fields]
+        filters = self.query_dict(query_params, all_fields)
+        # data['filters'] = filters
+        qs = qs.filter(**filters)
+
+        data['data'] = self.fill_in_data(qs)
+        data['total_acres'] = qs.aggregate(Sum('acres'))['acres__sum']
         return Response(data)
 
 
-class SubsidyDollarsTopFiveCommodities(APIView):
+class SubsidyDollarsList(FilteredListView):
     """
-    Top five commodities subsidy summed over all counties
+    List subsidy dollars, optionally filtered on commodity and/or year. (Section E)
+
+    By default all data in the table is returned, row-wise. Filtered results by year, and commodity may be specified by providing query parameters
+
+    Example filtering: "?year=2012&year=2003&commodity=Tree" to get Tree data for both 2012 and 2003.
     """
-    def get(self, request, format=None):
-        if not metadata_dict:
-            fetch_metadata(Metadata)
-        if not region_to_fips:
-            fetch_region_lookup(RegionLookup)
-        # Get the most recent year for subsidy dollars
-        latest_year = get_most_recent_year(SubsidyDollars)
-        data = {
-            'error': None,
-            'unit': metadata_dict['subsidy_dollars']['unit'],
-            'year': latest_year,
-            'description': 'Subsidy dollars for top five commodities',
-            'data': []
-        }
-        sq = SubsidyDollars.objects.filter(
-            year=latest_year
-        )
-        subs_c = Counter()
-        for subs in sq:
-            subs_c[subs.commodity] = subs_c.get(subs.commodity, 0) + subs.subsidy_dollars
-        top_five_comm = dict(subs_c.most_common(5))
-        data['data'].append(top_five_comm)
-        return Response(data)
+    model = SubsidyDollars
+    serializer = SubsidyDollarsSerializerWrapped
 
 
 class SubsidyDollarsTable(APIView):
     """
     Table of county or Oregon state (commodity -> subsidy
-    dollars) for the most recent year for which data is available.
+    dollars) for the most recent year for which data is available in the DB.
 
     Use query parameter 'format=json' to return JSON data, otherwise browsable
     api format response is returned.
@@ -358,86 +365,59 @@ class SubsidyDollarsTable(APIView):
         return Response(data)
 
 
-class CommodityAreaTable(FilteredAPIView):
+class SubsidyDollarsTopFiveCounties(APIView):
     """
-    Table of (commodity -> area) for Oregon or selected county.
+    Top five counties subsidy summed over all commodities
     """
-    @staticmethod
-    def fill_in_data(query):
-        """Populate data array from the query"""
-
-        data_array = query.values('commodity', 'acres')
-        commodity_list = query.distinct('commodity').values_list('commodity', flat=True)
-
-        tempdata = []
-
-        for commodity in commodity_list:
-            acres = data_array.filter(commodity=commodity).aggregate(Sum('acres'))['acres__sum']
-            tempdata.append({
-                'commodity': commodity,
-                'acres': acres
-            })
-
-        return tempdata
-
     def get(self, request, format=None):
-        """Return table of county or Oregon state (commodity -> subsidy
-        dollars) for the most recent year for which data is available.
-
-        Example 1: GET /table/subsidy_dollars/?format=json
-        Returns the table (commodity -> subsidy dollars) for all of Oregon
-        in JSON format.
-
-        Example 2: GET /table/subsidy_dollars/?county=Linn&format=json
-        Returns the table (commodity -> subsidy dollars) for Linn County
-        in JSON format.
-
-        Selecting a commodity or a year has no effect on the returned
-        subsidy data.
-
-        Use format=api or no query parameter to get browsable api results.
-        """
-        # Fetch metadata and region lookup tables from database if necessary
         if not metadata_dict:
             fetch_metadata(Metadata)
         if not region_to_fips:
             fetch_region_lookup(RegionLookup)
         # Get the most recent year for subsidy dollars
-        latest_year = get_most_recent_year(NassCommodityArea)
+        latest_year = get_most_recent_year(SubsidyDollars)
         data = {
             'error': None,
-            'unit': "acres",
+            'unit': metadata_dict['subsidy_dollars']['unit'],
             'year': latest_year,
-            'description': 'Commodity area for each commodity in {}',
-            'data': [],
-            'total_acres': 0
+            'description': 'Subsidy dollars for top five counties',
+            'data': []
         }
-        qs = NassCommodityArea.objects.filter(
-            acres__isnull=False,
+        qs = SubsidyDollars.objects.filter(
             year=latest_year
-        ).exclude(commodity='Total Acres')
+        )
+        subs_c = Counter()
+        for subs in qs:
+            subs_c[subs.fips] = subs_c.get(subs.fips, 0) + subs.subsidy_dollars
+        top_five_comm = dict(subs_c.most_common(5))
+        data['data'].append(top_five_comm)
+        return Response(data)
 
-        query_params = request.query_params.copy()  # create mutable copy
-        if 'county' in query_params:
-            # remove county from query_params because of region_to_fips mapping
-            county = query_params.pop('county')[0]
-            qs = qs.filter(fips=region_to_fips[county])
-            data.update({
-                'description': data['description'].format(county) + ' County',
-                'region': county,
-            })
-        else:
-            data.update({
-                'description': data['description'].format('Oregon'),
-                'region': 'Oregon (Statewide)'
-            })
 
-        # enable filtering on all fields
-        all_fields = [f.name for f in NassCommodityArea._meta.fields]
-        filters = self.query_dict(query_params, all_fields)
-        # data['filters'] = filters
-        qs = qs.filter(**filters)
-
-        data['data'] = self.fill_in_data(qs)
-        data['total_acres'] = qs.aggregate(Sum('acres'))['acres__sum']
+class SubsidyDollarsTopFiveCommodities(APIView):
+    """
+    Top five commodities subsidy summed over all counties
+    """
+    def get(self, request, format=None):
+        if not metadata_dict:
+            fetch_metadata(Metadata)
+        if not region_to_fips:
+            fetch_region_lookup(RegionLookup)
+        # Get the most recent year for subsidy dollars
+        latest_year = get_most_recent_year(SubsidyDollars)
+        data = {
+            'error': None,
+            'unit': metadata_dict['subsidy_dollars']['unit'],
+            'year': latest_year,
+            'description': 'Subsidy dollars for top five commodities',
+            'data': []
+        }
+        qs = SubsidyDollars.objects.filter(
+            year=latest_year
+        )
+        subs_c = Counter()
+        for subs in qs:
+            subs_c[subs.commodity] = subs_c.get(subs.commodity, 0) + subs.subsidy_dollars
+        top_five_comm = dict(subs_c.most_common(5))
+        data['data'].append(top_five_comm)
         return Response(data)
