@@ -204,35 +204,25 @@ class CommodityAreaTable(FilteredAPIView):
     Table of (commodity -> area) for Oregon or selected county and only from the most recent year in the DB (Section B).
     """
     @staticmethod
-    def fill_in_data(query, data_array):
+    def fill_in_data(query):
         """Populate data array from the query"""
-        for row in query:
-            data_array['data'].append({
-                'commodity': row.commodity,
-                'acres': row.acres
-            })
 
-        commodity_list = []
-        for item in data_array['data']:
-            commodity_list.append(item['commodity'])
+        data_array = query.values('commodity', 'acres')
+        commodity_list = query.distinct('commodity').values_list('commodity', flat=True)
 
-        commodity_list = set(commodity_list)
         tempdata = []
 
         for commodity in commodity_list:
-            acres = [item['acres'] for item in data_array['data'] if item['commodity'] == commodity]
+            acres = data_array.filter(commodity=commodity).aggregate(Sum('acres'))['acres__sum']
             tempdata.append({
                 'commodity': commodity,
-                'acres': sum(acres)
+                'acres': acres
             })
 
-        data_array['data'] = tempdata
+        return tempdata
 
     def get(self, request, format=None):
         """Return table of county or Oregon state (commodity -> farm area) for the most recent year for which data is available.
-
-        Selecting a commodity or a year has no effect on the returned
-        subsidy data.
         """
         # Fetch metadata and region lookup tables from database if necessary
         if not metadata_dict:
@@ -275,7 +265,7 @@ class CommodityAreaTable(FilteredAPIView):
         # data['filters'] = filters
         qs = qs.filter(**filters)
 
-        self.fill_in_data(qs, data)
+        data['data'] = self.fill_in_data(qs)
         data['total_acres'] = qs.aggregate(Sum('acres'))['acres__sum']
         return Response(data)
 
