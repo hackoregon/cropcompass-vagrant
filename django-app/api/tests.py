@@ -5,9 +5,6 @@ from .models import (
     NassAnimalsSales,
     SubsidyDollars,
     RegionLookup,
-    MetadataTest,
-    SubsidyDollarsTest,
-    RegionLookupTest,
 )
 from .views import (
     METADATA_FIELDS,
@@ -20,61 +17,6 @@ from .views import (
     SubsidyDollarsList,
     SubsidyDollarsTable
 )
-
-
-class TestViewHelperFunctions(TestCase):
-    @classmethod
-    def setUpClass(cls):
-        # A test metadata database entry
-        MetadataTest.objects.create(
-            **dict(zip(METADATA_FIELDS, METADATA_FIELDS)))
-        # A few region lookup table entries
-        regions = ['Amazon', 'Mordor', 'Pluto', 'Gotham']
-        fips = [90202, 11235, 60001, 291]
-        region_lookup_list = [
-            RegionLookupTest(region=r, fips=f) for r, f in zip(regions, fips)
-        ]
-        RegionLookupTest.objects.bulk_create(region_lookup_list)
-
-    @classmethod
-    def tearDownClass(cls):
-        pass
-
-    def test_fetch_metadata_retrieves_all_rows_from_table(self):
-        fetch_metadata(MetadataTest)
-        self.assertEqual(MetadataTest.objects.count(), len(metadata_dict))
-
-    def test_fetch_metadata_retrieves_correct_values(self):
-        fetch_metadata(MetadataTest)
-        metadata = MetadataTest.objects.first()
-        table_name = metadata.table_name
-        self.assertIn(table_name, metadata_dict)
-        for field in METADATA_FIELDS:
-            self.assertEqual(
-                getattr(metadata, field),
-                metadata_dict[table_name][field]
-            )
-
-    def test_get_most_recent_year(self):
-        # A few SubsidyDollarsTest entries
-        subsidy_dollars_list = [
-            SubsidyDollarsTest(year=year) for year in (1997, 2000, 2013, 2015)
-        ]
-        SubsidyDollarsTest.objects.bulk_create(subsidy_dollars_list)
-        self.assertEqual(2015, get_most_recent_year(SubsidyDollarsTest))
-
-    def test_fetch_region_lookup_retrieves_all_rows(self):
-        fetch_region_lookup(RegionLookupTest)
-        self.assertEqual(RegionLookupTest.objects.count(), len(region_to_fips))
-
-    def test_fetch_region_lookup_generates_correct_values(self):
-        fetch_region_lookup(RegionLookupTest)
-        for region_lookup in RegionLookupTest.objects.all():
-            self.assertIn(region_lookup.region, region_to_fips)
-            self.assertEqual(
-                region_lookup.fips,
-                region_to_fips[region_lookup.region]
-            )
 
 
 class TestFilteredAPIView(TestCase):

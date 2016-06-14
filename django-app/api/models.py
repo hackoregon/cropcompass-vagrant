@@ -24,20 +24,6 @@ class Metadata(models.Model):
         db_table = 'metadata'
 
 
-# Managed version of Metadata model for testing only (auto-generated pk)
-class MetadataTest(models.Model):
-    name = models.CharField(max_length=64, blank=True, null=True)
-    description = models.CharField(max_length=256, blank=True, null=True)
-    table_name = models.CharField(max_length=64, blank=True, null=True)
-    unit = models.CharField(max_length=64, blank=True, null=True)
-    field = models.CharField(max_length=64, blank=True, null=True)
-    source_name = models.CharField(max_length=256, blank=True, null=True)
-    source_link = models.CharField(max_length=512, blank=True, null=True)
-
-    class Meta:
-        db_table = 'metadata_test'
-
-
 class NassAnimalsInventory(models.Model):
     commodity = models.CharField(max_length=64, blank=True, null=True)
     year = models.SmallIntegerField(blank=True, null=True)
@@ -105,18 +91,6 @@ class RegionLookup(models.Model):
         db_table = 'region_lookup'
 
 
-# Managed version of RegionLookup model for testing only (auto-generated pk)
-class RegionLookupTest(models.Model):
-    st_code = models.IntegerField(blank=True, null=True)
-    state = models.CharField(max_length=2, blank=True, null=True)
-    co_code = models.DecimalField(max_digits=3, decimal_places=0, blank=True, null=True)
-    region = models.CharField(max_length=90, blank=True, null=True)
-    fips = models.IntegerField(blank=True, null=True)
-
-    class Meta:
-        db_table = 'region_lookup_test'
-
-
 class SpatialRefSys(models.Model):
     srid = models.IntegerField(primary_key=True)
     auth_name = models.CharField(max_length=256, blank=True, null=True)
@@ -138,17 +112,6 @@ class SubsidyDollars(models.Model):
     class Meta:
         managed = False
         db_table = 'subsidy_dollars'
-
-
-# Managed version of SubsidyDollars model for testing only (auto-generated pk)
-class SubsidyDollarsTest(models.Model):
-    commodity = models.CharField(max_length=64, blank=True, null=True)
-    year = models.SmallIntegerField(blank=True, null=True)
-    fips = models.IntegerField(blank=True, null=True)
-    subsidy_dollars = models.IntegerField(blank=True, null=True)
-
-    class Meta:
-        db_table = 'subsidy_dollars_test'
 
 
 class SubsidyRecipients(models.Model):
