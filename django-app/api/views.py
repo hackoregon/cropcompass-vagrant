@@ -43,6 +43,7 @@ metadata_dict = {}
 # Oregon region -> fips lookup dictionary.  It will be
 # populated by fetch_metadata() when the first view that needs it is called.
 region_to_fips = {}
+fips_to_region = {}
 
 METADATA_FIELDS = (
     'name',
@@ -53,6 +54,13 @@ METADATA_FIELDS = (
     'source_name',
     'source_link'
 )
+
+
+def cache_lookups():
+        if not metadata_dict:
+            fetch_metadata(Metadata)
+        if not region_to_fips:
+            fetch_region_lookup(RegionLookup)
 
 
 def fetch_metadata(metadata_model):
@@ -84,14 +92,15 @@ def get_most_recent_year(model):
 
 def fetch_region_lookup(region_lookup_model):
     """
-    Fetch region lookup table. Stores only region and fips fields in
-    region_to_fips dictionary.
+    Fetch region lookup tables. Stores only region and fips fields in
+    lookup dictionaries.
     """
-    for region_entry in region_lookup_model.objects.all().values(
+    for region_entry in region_lookup_model.objects.values(
         'region',
         'fips'
     ):
         region_to_fips[region_entry['region']] = region_entry['fips']
+        fips_to_region[region_entry['fips']] = region_entry['region']
 
 
 class FilteredAPIView(APIView):
@@ -225,10 +234,7 @@ class CommodityAreaTable(FilteredAPIView):
         """Return table of county or Oregon state (commodity -> farm area) for the most recent year for which data is available.
         """
         # Fetch metadata and region lookup tables from database if necessary
-        if not metadata_dict:
-            fetch_metadata(Metadata)
-        if not region_to_fips:
-            fetch_region_lookup(RegionLookup)
+        cache_lookups()
         # Get the most recent year for commodity area
         latest_year = get_most_recent_year(NassCommodityArea)
         data = {
@@ -272,7 +278,7 @@ class CommodityAreaTable(FilteredAPIView):
 
 class SubsidyDollarsList(FilteredListView):
     """
-    List subsidy dollars, optionally filtered on commodity and/or year. (Section E)
+    List subsidy dollars, optionally filtered on commodity and/or year.
 
     By default all data in the table is returned, row-wise. Filtered results by year, and commodity may be specified by providing query parameters
 
@@ -286,15 +292,13 @@ class SubsidyDollarsTable(APIView):
     """
     Table of county or Oregon state (commodity -> subsidy
     dollars) for the most recent year for which data is available in the DB.
+    (Section E)
 
-    Use query parameter 'format=json' to return JSON data, otherwise browsable
-    api format response is returned.
-
-    No filtering returns Oregon statewide data. Filtering is possible for
-    county.
+    By default returns Oregon statewide data. Add query parameter "county" to
+    get data for a specific county.
 
     Example:
-    /table/subsidy_dollars/?county=Linn&format=json
+    /table/subsidy_dollars/?county=Linn
     """
     @staticmethod
     def fill_in_data(query, fields=(), **kwargs):
@@ -324,10 +328,7 @@ class SubsidyDollarsTable(APIView):
         Use format=api or no query parameter to get browsable api results.
         """
         # Fetch metadata and region lookup tables from database if necessary
-        if not metadata_dict:
-            fetch_metadata(Metadata)
-        if not region_to_fips:
-            fetch_region_lookup(RegionLookup)
+        cache_lookups()
         # Get the most recent year for subsidy dollars
         latest_year = get_most_recent_year(SubsidyDollars)
         data = {
@@ -342,7 +343,7 @@ class SubsidyDollarsTable(APIView):
             county = request.query_params['county']
             subsidy_dollars = SubsidyDollars.objects.filter(
                 year=latest_year,
-                fips=region_to_fips[county])
+                fips=region_to_fips[county.capitalize()])
             data['description'] = data['description'].format(county) + ' County'
             data.update({
                 'rows': subsidy_dollars.count(),
@@ -367,13 +368,11 @@ class SubsidyDollarsTable(APIView):
 
 class SubsidyDollarsTopFiveCounties(APIView):
     """
-    Top five counties subsidy summed over all commodities
+    Top five counties plus Oregon (statewide) subsidy summed over all
+    commodities. (Section E)
     """
     def get(self, request, format=None):
-        if not metadata_dict:
-            fetch_metadata(Metadata)
-        if not region_to_fips:
-            fetch_region_lookup(RegionLookup)
+        cache_lookups()
         # Get the most recent year for subsidy dollars
         latest_year = get_most_recent_year(SubsidyDollars)
         data = {
@@ -383,26 +382,23 @@ class SubsidyDollarsTopFiveCounties(APIView):
             'description': 'Subsidy dollars for top five counties',
             'data': []
         }
-        qs = SubsidyDollars.objects.filter(
-            year=latest_year
-        )
+        qs = SubsidyDollars.objects. \
+            filter(year=latest_year)
         subs_c = Counter()
         for subs in qs:
-            subs_c[subs.fips] = subs_c.get(subs.fips, 0) + subs.subsidy_dollars
-        top_five_comm = dict(subs_c.most_common(5))
-        data['data'].append(top_five_comm)
+            region = fips_to_region[subs.fips]
+            subs_c[region] = subs_c.get(region, 0) + subs.subsidy_dollars
+        top_six_comm = dict(subs_c.most_common(6))
+        data['data'].append(top_six_comm)
         return Response(data)
 
 
 class SubsidyDollarsTopFiveCommodities(APIView):
     """
-    Top five commodities subsidy summed over all counties
+    Top five commodities subsidy summed over all counties. (Section D)
     """
     def get(self, request, format=None):
-        if not metadata_dict:
-            fetch_metadata(Metadata)
-        if not region_to_fips:
-            fetch_region_lookup(RegionLookup)
+        cache_lookups()
         # Get the most recent year for subsidy dollars
         latest_year = get_most_recent_year(SubsidyDollars)
         data = {
