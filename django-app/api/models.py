@@ -10,6 +10,97 @@ from __future__ import unicode_literals
 from django.db import models
 
 
+class CropDiversity(models.Model):
+    county_name = models.CharField(max_length=64, blank=True, null=True)
+    diversity_score = models.CharField(max_length=64, blank=True, null=True)
+
+    class Meta:
+        managed = False
+        db_table = 'crop_diversity'
+
+
+class ExportsByCountryRaw(models.Model):
+    commodity = models.CharField(max_length=64, blank=True, null=True)
+    country = models.CharField(max_length=64, blank=True, null=True)
+    time = models.CharField(max_length=64, blank=True, null=True)
+    value = models.CharField(max_length=64, blank=True, null=True)
+
+    class Meta:
+        managed = False
+        db_table = 'exports_by_country_raw'
+
+
+class ExportsHistoricalCleanedAnnualTotals(models.Model):
+    commodity = models.CharField(max_length=64, blank=True, null=True)
+    time = models.CharField(max_length=64, blank=True, null=True)
+    value = models.CharField(max_length=64, blank=True, null=True)
+
+    class Meta:
+        managed = False
+        db_table = 'exports_historical_cleaned_annual_totals'
+
+
+class ExportsHistoricalCleanedMonthlyTotals(models.Model):
+    commodity = models.CharField(max_length=64, blank=True, null=True)
+    time = models.CharField(max_length=64, blank=True, null=True)
+    value = models.CharField(max_length=64, blank=True, null=True)
+
+    class Meta:
+        managed = False
+        db_table = 'exports_historical_cleaned_monthly_totals'
+
+
+class ExportsHistoricalRaw(models.Model):
+    commodity = models.CharField(max_length=64, blank=True, null=True)
+    time = models.CharField(max_length=64, blank=True, null=True)
+    value = models.CharField(max_length=64, blank=True, null=True)
+
+    class Meta:
+        managed = False
+        db_table = 'exports_historical_raw'
+
+
+class ImportsByCountryRaw(models.Model):
+    commodity = models.CharField(max_length=64, blank=True, null=True)
+    country = models.CharField(max_length=64, blank=True, null=True)
+    time = models.CharField(max_length=64, blank=True, null=True)
+    value = models.CharField(max_length=64, blank=True, null=True)
+
+    class Meta:
+        managed = False
+        db_table = 'imports_by_country_raw'
+
+
+class ImportsHistoricalCleanedAnnualTotals(models.Model):
+    commodity = models.CharField(max_length=64, blank=True, null=True)
+    time = models.CharField(max_length=64, blank=True, null=True)
+    value = models.CharField(max_length=64, blank=True, null=True)
+
+    class Meta:
+        managed = False
+        db_table = 'imports_historical_cleaned_annual_totals'
+
+
+class ImportsHistoricalCleanedMonthlyTotals(models.Model):
+    commodity = models.CharField(max_length=64, blank=True, null=True)
+    time = models.CharField(max_length=64, blank=True, null=True)
+    value = models.CharField(max_length=64, blank=True, null=True)
+
+    class Meta:
+        managed = False
+        db_table = 'imports_historical_cleaned_monthly_totals'
+
+
+class ImportsHistoricalRaw(models.Model):
+    commodity = models.CharField(max_length=64, blank=True, null=True)
+    time = models.CharField(max_length=64, blank=True, null=True)
+    value = models.CharField(max_length=64, blank=True, null=True)
+
+    class Meta:
+        managed = False
+        db_table = 'imports_historical_raw'
+
+
 class Metadata(models.Model):
     name = models.CharField(max_length=64, blank=True, null=True)
     description = models.CharField(max_length=256, blank=True, null=True)
@@ -89,18 +180,6 @@ class RegionLookup(models.Model):
     class Meta:
         managed = False
         db_table = 'region_lookup'
-
-
-class SpatialRefSys(models.Model):
-    srid = models.IntegerField(primary_key=True)
-    auth_name = models.CharField(max_length=256, blank=True, null=True)
-    auth_srid = models.IntegerField(blank=True, null=True)
-    srtext = models.CharField(max_length=2048, blank=True, null=True)
-    proj4text = models.CharField(max_length=2048, blank=True, null=True)
-
-    class Meta:
-        managed = False
-        db_table = 'spatial_ref_sys'
 
 
 class SubsidyDollars(models.Model):
