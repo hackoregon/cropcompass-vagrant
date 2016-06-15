@@ -12,3 +12,4 @@ capture/
 *.sql
 logs/
 cropcompass/*
+install.log
