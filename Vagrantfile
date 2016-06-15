@@ -13,7 +13,6 @@ Vagrant.configure(2) do |config|
   # General Settings
   #
   config.vm.synced_folder '.', '/vagrant'
-  config.vm.synced_folder './cropcompass', '/home/vagrant/cropcompass'
 
   ##
   # Host Manager Plugin

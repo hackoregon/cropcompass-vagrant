@@ -8,8 +8,9 @@ cd /vagrant
 
 /vagrant/scripts/ubuntu.bash
 /vagrant/scripts/postgresql.bash
-/vagrant/scripts/pg_restores.bash
 /vagrant/scripts/virtualenvwrapper.bash
 /vagrant/scripts/django.bash
+/vagrant/scripts/django-app.bash
 /vagrant/scripts/uwsgi.bash
 /vagrant/scripts/nginx.bash
+echo `date` "Provisioning complete - logs are in ~vagrant/logs"

@@ -1,5 +1,11 @@
 #!/bin/bash
 
+if [ -e /etc/apt/sources.list.d/pgdg.list ]
+then
+  echo `date` "Ubuntu provisioning already done - exiting"
+  exit
+fi
+
 echo `date` "Autoremoving unused packages"
 sudo apt-get autoremove -y > ~/logs/autoremove 2>&1
 

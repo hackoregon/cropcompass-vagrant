@@ -1,0 +1,45 @@
+                                         List of relations
+ Schema |                   Name                    |   Type   |  Owner  |    Size    | Description 
+--------+-------------------------------------------+----------+---------+------------+-------------
+ public | crop_diversity                            | table    | vagrant | 16 kB      | 
+ public | exports_by_country_raw                    | table    | vagrant | 392 kB     | 
+ public | exports_historical_cleaned_annual_totals  | table    | vagrant | 4848 kB    | 
+ public | exports_historical_cleaned_monthly_totals | table    | vagrant | 38 MB      | 
+ public | exports_historical_raw                    | table    | vagrant | 46 MB      | 
+ public | geography_columns                         | view     | vagrant | 0 bytes    | 
+ public | geometry_columns                          | view     | vagrant | 0 bytes    | 
+ public | imports_by_country_raw                    | table    | vagrant | 96 kB      | 
+ public | imports_historical_cleaned_annual_totals  | table    | vagrant | 112 kB     | 
+ public | imports_historical_cleaned_monthly_totals | table    | vagrant | 992 kB     | 
+ public | imports_historical_raw                    | table    | vagrant | 1080 kB    | 
+ public | metadata                                  | table    | alex    | 16 kB      | 
+ public | metadata_id_seq                           | sequence | alex    | 8192 bytes | 
+ public | nass_animals_inventory                    | table    | alex    | 144 kB     | 
+ public | nass_animals_inventory_id_seq             | sequence | alex    | 8192 bytes | 
+ public | nass_animals_sales                        | table    | alex    | 120 kB     | 
+ public | nass_animals_sales_id_seq                 | sequence | alex    | 8192 bytes | 
+ public | nass_commodity_area                       | table    | alex    | 744 kB     | 
+ public | nass_commodity_area_id_seq                | sequence | alex    | 8192 bytes | 
+ public | nass_commodity_farms                      | table    | alex    | 824 kB     | 
+ public | nass_commodity_farms_id_deq               | sequence | alex    | 8192 bytes | 
+ public | oain_harvest_acres                        | table    | alex    | 1800 kB    | 
+ public | oain_harvest_acres_id_seq                 | sequence | alex    | 8192 bytes | 
+ public | orfipsonly                                | table    | vagrant | 3888 kB    | 
+ public | orfipsonly_gid_seq                        | sequence | vagrant | 8192 bytes | 
+ public | raster_columns                            | view     | vagrant | 0 bytes    | 
+ public | raster_overviews                          | view     | vagrant | 0 bytes    | 
+ public | raw_nass_census_data                      | table    | alex    | 65 MB      | 
+ public | raw_nass_census_data_id_seq               | sequence | alex    | 8192 bytes | 
+ public | raw_oain_data                             | table    | alex    | 5616 kB    | 
+ public | raw_oain_data_id_seq                      | sequence | alex    | 8192 bytes | 
+ public | raw_subsidy_data                          | table    | alex    | 160 kB     | 
+ public | raw_subsidy_data_id_seq                   | sequence | alex    | 8192 bytes | 
+ public | region_lookup                             | table    | alex    | 8192 bytes | 
+ public | region_lookup_id_seq                      | sequence | alex    | 8192 bytes | 
+ public | spatial_ref_sys                           | table    | vagrant | 4360 kB    | 
+ public | subsidy_dollars                           | table    | alex    | 80 kB      | 
+ public | subsidy_dollars_id_seq                    | sequence | alex    | 8192 bytes | 
+ public | subsidy_recipients                        | table    | alex    | 80 kB      | 
+ public | subsidy_recipients_id_seq                 | sequence | alex    | 8192 bytes | 
+(40 rows)
+

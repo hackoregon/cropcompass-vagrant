@@ -1,0 +1,1 @@
+# cropcompass-django

@@ -1,5 +1,11 @@
 #!/bin/bash
 
+if [ -e /usr/local/bin/virtualenvwrapper.sh ]
+then
+  echo `date` "virtualenvwrapper already installed - exiting"
+  exit
+fi
+
 # https://virtualenvwrapper.readthedocs.io/en/latest/index.html
 echo `date` "Installing virtualenv wrapper"
 sudo pip3 install virtualenv virtualenvwrapper > ~/logs/virtualenvwrapper 2>&1
