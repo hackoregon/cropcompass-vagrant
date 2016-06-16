@@ -2,7 +2,10 @@ from api.models import (
     Metadata,
     NassAnimalsSales,
     SubsidyDollars,
-    NassCommodityArea
+    SubsidyRecipients,
+    NassCommodityArea,
+    NassCommodityFarms,
+    OainHarvestAcres,
 )
 from rest_framework import serializers
 
@@ -61,6 +64,23 @@ class SubsidyDollarsSerializerWrapped(serializers.Serializer):
     data = SubsidyDollarsSerializer(many=True)
 
 
+class SubsidyRecipientsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SubsidyRecipients
+        fields = (
+            'commodity',
+            'year',
+            'fips',
+            'subsidy_recipients'
+        )
+
+
+class SubsidyRecipientsSerializerWrapped(serializers.Serializer):
+    error = serializers.CharField(max_length=200, allow_blank=True)
+    rows = serializers.IntegerField()
+    data = SubsidyRecipientsSerializer(many=True)
+
+
 class NassCommodityAreaSerializer(serializers.ModelSerializer):
     class Meta:
         model = NassCommodityArea
@@ -76,3 +96,37 @@ class NassCommodityAreaSerializerWrapped(serializers.Serializer):
     error = serializers.CharField(max_length=200, allow_blank=True)
     rows = serializers.IntegerField()
     data = NassCommodityAreaSerializer(many=True)
+
+
+class NassCommodityFarmsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = NassCommodityFarms
+        fields = (
+            'commodity',
+            'year',
+            'fips',
+            'farms'
+        )
+
+
+class NassCommodityFarmsSerializerWrapped(serializers.Serializer):
+    error = serializers.CharField(max_length=200, allow_blank=True)
+    rows = serializers.IntegerField()
+    data = NassCommodityFarmsSerializer(many=True)
+
+
+class OainHarvestAcresSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = OainHarvestAcres
+        fields = (
+            'commodity',
+            'year',
+            'fips',
+            'harvested_acres'
+        )
+
+
+class OainHarvestAcresSerializerWrapped(serializers.Serializer):
+    error = serializers.CharField(max_length=200, allow_blank=True)
+    rows = serializers.IntegerField()
+    data = OainHarvestAcresSerializer(many=True)

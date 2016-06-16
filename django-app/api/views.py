@@ -27,14 +27,20 @@ from .models import (
     Metadata,
     NassAnimalsSales,
     SubsidyDollars,
+    SubsidyRecipients,
     RegionLookup,
-    NassCommodityArea
+    NassCommodityArea,
+    NassCommodityFarms,
+    OainHarvestAcres,
 )
 from .serializers import (
     MetadataSerializerWrapped,
     NassAnimalsSalesSerializerWrapped,
     SubsidyDollarsSerializerWrapped,
-    NassCommodityAreaSerializerWrapped
+    SubsidyRecipientsSerializerWrapped,
+    NassCommodityAreaSerializerWrapped,
+    NassCommodityFarmsSerializerWrapped,
+    OainHarvestAcresSerializerWrapped,
 )
 
 # Metadata dictionary of database tables keyed on the table_name. It will be
@@ -136,12 +142,16 @@ query parameter to get JSON response.
         """
         endpoints = [
             ('List metadata for DB tables', 'metadata'),
-            ('List commodities with area - row view', 'nass_commodity_area_list'),
-            ('List commodities with area - table view', 'nass_commodity_area_table'),
+            ('List commodities by area - row view', 'nass_commodity_area_list'),
+            ('List commodities by area - table view', 'nass_commodity_area_table'),
+            ('List commodities by number of farms - row view', 'nass_commodity_farms_list'),
+            ('List commodities by harvested acres - row view', 'oain_harvest_acres_list'),
+            ('List animal sales - row view', 'nass_animals_sales'),
             ('Subsidy Dollars - row view', 'subsidy_dollars_data'),
             ('Subsidy Dollars - table view', 'subsidy_dollars_table'),
             ('Subsidy Dollars - top 5 counties', 'subsidy_dollars_top_counties'),
             ('Subsidy Dollars - top 5 commodities', 'subsidy_dollars_top_commodities'),
+            ('Subsidy Recipients - row view', 'subsidy_recipients_data'),
         ]
         endpoint_dict = OrderedDict()
         for endpoint_name, path in endpoints:
@@ -188,15 +198,21 @@ class MetadataView(FilteredListView):
 
 class NassAnimalsSalesList(FilteredListView):
     """
-    List animal sales.
+    List animal sales. Exclude rows where animals == null
+
+    By default all data in the table is returned, row-wise. Filtered results by year, fips, and commodity may be specified by providing query parameters
+
+    Example filtering: "?commodity=Tomatoes&fips=41005&year=2012&year=2007" to get Tomatoes data from county (fips=41005) for both 2012 and 2007.
     """
+    filter_fields = ['fips', 'commodity', 'year']
     model = NassAnimalsSales
     serializer = NassAnimalsSalesSerializerWrapped
+    queryset = model.objects.filter(animals__isnull=False)
 
 
 class NassCommodityAreaList(FilteredListView):
     """
-    List commodities with area. Exclude rows where acres == null
+    List commodities by area. Exclude rows where acres == null
 
     By default all data in the table is returned, row-wise. Filtered results by year, fips, and commodity may be specified by providing query parameters
 
@@ -274,6 +290,34 @@ class CommodityAreaTable(FilteredAPIView):
         data['data'] = self.fill_in_data(qs)
         data['total_acres'] = qs.aggregate(Sum('acres'))['acres__sum']
         return Response(data)
+
+
+class NassCommodityFarmsList(FilteredListView):
+    """
+    List commodities by number of farms. Exclude rows where farms == null
+
+    By default all data in the table is returned, row-wise. Filtered results by year, fips, and commodity may be specified by providing query parameters
+
+    Example filtering: "?commodity=Tomatoes&fips=41005&year=2012&year=2007" to get Tomatoes data from county (fips=41005) for both 2012 and 2007.
+    """
+    filter_fields = ['fips', 'commodity', 'year']
+    model = NassCommodityFarms
+    serializer = NassCommodityFarmsSerializerWrapped
+    queryset = model.objects.filter(farms__isnull=False)
+
+
+class OainHarvestAcresList(FilteredListView):
+    """
+    List commodities by number of harvested acres. Exclude rows where harvested_acres == null
+
+    By default all data in the table is returned, row-wise. Filtered results by year, fips, and commodity may be specified by providing query parameters
+
+    Example filtering: "?commodity=Tomatoes&fips=41005&year=2012&year=2007" to get Tomatoes data from county (fips=41005) for both 2012 and 2007.
+    """
+    filter_fields = ['fips', 'commodity', 'year']
+    model = OainHarvestAcres
+    serializer = OainHarvestAcresSerializerWrapped
+    queryset = model.objects.filter(harvested_acres__isnull=False)
 
 
 class SubsidyDollarsList(FilteredListView):
@@ -417,3 +461,15 @@ class SubsidyDollarsTopFiveCommodities(APIView):
         top_five_comm = dict(subs_c.most_common(5))
         data['data'].append(top_five_comm)
         return Response(data)
+
+
+class SubsidyRecipientsList(FilteredListView):
+    """
+    List subsidy recipients, optionally filtered on commodity and/or year.
+
+    By default all data in the table is returned, row-wise. Filtered results by year, and commodity may be specified by providing query parameters
+
+    Example filtering: "?year=2012&year=2003&commodity=Tree" to get Tree data for both 2012 and 2003.
+    """
+    model = SubsidyRecipients
+    serializer = SubsidyRecipientsSerializerWrapped
