@@ -29,8 +29,10 @@ urlpatterns = [
     url(r'^data/commodity_farms/$', views.NassCommodityFarmsList.as_view(), name='nass_commodity_farms_list'),
     url(r'^data/oain_harvest_acres/$', views.OainHarvestAcresList.as_view(), name='oain_harvest_acres_list'),
     url(r'^table/subsidy_dollars/$', views.SubsidyDollarsTable.as_view(), name='subsidy_dollars_table'),
+    url(r'^table/subsidy_dollars_timeline/$', views.SubsidyDollarsTimeline.as_view(), name='subsidy_dollars_timeline'),
     url(r'^table/commodity_area/$', views.CommodityAreaTable.as_view(), name='nass_commodity_area_table'),
     url(r'^admin/', include(admin.site.urls)),
     url(r'^table/subsidy_dollars_top5fips/$', views.SubsidyDollarsTopFiveCounties.as_view(), name='subsidy_dollars_top_counties'),
     url(r'^table/subsidy_dollars_top5crops/$', views.SubsidyDollarsTopFiveCommodities.as_view(), name='subsidy_dollars_top_commodities'),
+    url(r'^data/crop_diversity/$', views.CropDiversityList.as_view(), name='crop_diversity_data'),
 ]

@@ -24,6 +24,7 @@ from rest_framework.response import Response
 from rest_framework.reverse import reverse as api_reverse
 from collections import OrderedDict, Counter
 from .models import (
+    CropDiversity,
     Metadata,
     NassAnimalsSales,
     SubsidyDollars,
@@ -101,12 +102,32 @@ def fetch_region_lookup(region_lookup_model):
     Fetch region lookup tables. Stores only region and fips fields in
     lookup dictionaries.
     """
+    crop_div_qs = CropDiversity.objects.all()
     for region_entry in region_lookup_model.objects.values(
         'region',
         'fips'
     ):
-        region_to_fips[region_entry['region']] = region_entry['fips']
-        fips_to_region[region_entry['fips']] = region_entry['region']
+        county_name = region_entry['region']
+        fips = region_entry['fips']
+        if fips == 41000:
+            region_to_fips[county_name] = {
+                'fips': fips,
+                'crop diversity score': None
+            }
+            fips_to_region[fips] = {
+                'region': county_name,
+                'crop diversity score': None
+            }
+        else:
+            cd = crop_div_qs.get(county_name=county_name.upper())
+            region_to_fips[county_name] = {
+                'fips': fips,
+                'crop diversity score': float(cd.diversity_score)
+            }
+            fips_to_region[fips] = {
+                'region': county_name,
+                'crop diversity score': float(cd.diversity_score)
+            }
 
 
 class FilteredAPIView(APIView):
@@ -120,6 +141,10 @@ class FilteredAPIView(APIView):
         for param in query_params.keys():
             if param in filter_fields:
                 vals = query_params.getlist(param)
+                # Convert 'county' to 'fips'
+                if param == 'county':
+                    vals = [region_to_fips[v]['fips'] for v in vals]
+                    param = 'fips'
                 filter_params[param] = vals
         # Augment dictionary keys with __in for looking up list inclusion
         query = {key + '__in': vals for key, vals in filter_params.items()}
@@ -149,9 +174,11 @@ query parameter to get JSON response.
             ('List animal sales - row view', 'nass_animals_sales'),
             ('Subsidy Dollars - row view', 'subsidy_dollars_data'),
             ('Subsidy Dollars - table view', 'subsidy_dollars_table'),
+            ('Subsidy Dollars - timeline view', 'subsidy_dollars_timeline'),
             ('Subsidy Dollars - top 5 counties', 'subsidy_dollars_top_counties'),
             ('Subsidy Dollars - top 5 commodities', 'subsidy_dollars_top_commodities'),
             ('Subsidy Recipients - row view', 'subsidy_recipients_data'),
+            ('Crop Diversity - row view', 'crop_diversity_data'),
         ]
         endpoint_dict = OrderedDict()
         for endpoint_name, path in endpoints:
@@ -163,7 +190,7 @@ class FilteredListView(FilteredAPIView):
     """
     Endpoint class allowing filtering by arbitrary params.
     """
-    filter_fields = ['commodity', 'year']
+    filter_fields = ['commodity', 'year', 'fips', 'county']
     model = None
     serializer = None
 
@@ -270,7 +297,7 @@ class CommodityAreaTable(FilteredAPIView):
         if 'county' in query_params:
             # remove county from query_params because of region_to_fips mapping
             county = query_params.pop('county')[0]
-            qs = qs.filter(fips=region_to_fips[county])
+            qs = qs.filter(fips=region_to_fips[county]['fips'])
             data.update({
                 'description': data['description'].format(county) + ' County',
                 'region': county,
@@ -322,12 +349,13 @@ class OainHarvestAcresList(FilteredListView):
 
 class SubsidyDollarsList(FilteredListView):
     """
-    List subsidy dollars, optionally filtered on commodity and/or year.
+    List subsidy dollars, optionally filtered on commodity, year, county or fips. Use either fips or county, but not both in the same query.
 
-    By default all data in the table is returned, row-wise. Filtered results by year, and commodity may be specified by providing query parameters
+    By default all data in the table is returned, row-wise. Filtered results by year, commodity, county or fips may be specified by providing query parameters.
 
-    Example filtering: "?year=2012&year=2003&commodity=Tree" to get Tree data for both 2012 and 2003.
+    Example filtering: "?year=2012&year=2003&commodity=Tree&county=Baker" to get Tree data from Baker county for both 2012 and 2003.
     """
+    cache_lookups()
     model = SubsidyDollars
     serializer = SubsidyDollarsSerializerWrapped
 
@@ -336,7 +364,6 @@ class SubsidyDollarsTable(APIView):
     """
     Table of county or Oregon state (commodity -> subsidy
     dollars) for the most recent year for which data is available in the DB.
-    (Section E)
 
     By default returns Oregon statewide data. Add query parameter "county" to
     get data for a specific county.
@@ -355,22 +382,6 @@ class SubsidyDollarsTable(APIView):
         return data
 
     def get(self, request, format=None):
-        """Return table of county or Oregon state (commodity -> subsidy
-        dollars) for the most recent year for which data is available.
-
-        Example 1: GET /table/subsidy_dollars/?format=json
-        Returns the table (commodity -> subsidy dollars) for all of Oregon
-        in JSON format.
-
-        Example 2: GET /table/subsidy_dollars/?county=Linn&format=json
-        Returns the table (commodity -> subsidy dollars) for Linn County
-        in JSON format.
-
-        Selecting a commodity or a year has no effect on the returned
-        subsidy data.
-
-        Use format=api or no query parameter to get browsable api results.
-        """
         # Fetch metadata and region lookup tables from database if necessary
         cache_lookups()
         # Get the most recent year for subsidy dollars
@@ -387,7 +398,7 @@ class SubsidyDollarsTable(APIView):
             county = request.query_params['county']
             subsidy_dollars = SubsidyDollars.objects.filter(
                 year=latest_year,
-                fips=region_to_fips[county.capitalize()])
+                fips=region_to_fips[county.capitalize()]['fips'])
             data['description'] = data['description'].format(county) + ' County'
             data.update({
                 'rows': subsidy_dollars.count(),
@@ -410,10 +421,75 @@ class SubsidyDollarsTable(APIView):
         return Response(data)
 
 
+class SubsidyDollarsTimeline(APIView):
+    """
+    Table of county or Oregon state (year -> subsidy dollars) totaled over all commodities.
+
+    By default returns Oregon statewide data. Add query parameter "county" to
+    get data for a specific county.
+
+    Example:
+    /table/subsidy_dollars_timeline/?county=Linn
+    """
+    @staticmethod
+    def fill_in_data(query, fields=(), **kwargs):
+        """Populate data array from the query"""
+        data = query.values(*fields)
+
+        if kwargs.get('unique', False):
+            pass
+
+        return data
+
+    def get(self, request, format=None):
+        # Fetch metadata and region lookup tables from database if necessary
+        cache_lookups()
+        data = {
+            'error': None,
+            'unit': metadata_dict['subsidy_dollars']['unit'],
+            'description': 'Subsidy dollar totals in each year in {}',
+            'data': []
+        }
+        qs = SubsidyDollars.objects.all()
+        county = request.query_params.get('county', None)
+        if county:
+            top_qs = qs.filter(fips=region_to_fips[county.capitalize()]['fips'])
+            # Build a list of unique sorted years
+            years_set = set(top_qs.values_list('year', flat=True))
+            years = sorted(list(years_set))
+            for year in years:
+                qs = top_qs.filter(year=year)
+                total_subsidy = qs.aggregate(Sum('subsidy_dollars'))['subsidy_dollars__sum']
+                data['data'].append(
+                    {"year": year, "subsidy_dollars": total_subsidy}
+                )
+            data['description'] = data['description'].format(county) + ' County'
+            data.update({
+                'rows': len(years),
+                'region': county,
+            })
+        # If no county is specified, return Oregon total subsidies
+        else:
+            years_set = set(qs.values_list('year', flat=True))
+            years = sorted(list(years_set))
+            for year in years:
+                new_qs = qs.filter(year=year)
+                total_subsidy = new_qs.aggregate(Sum('subsidy_dollars'))['subsidy_dollars__sum']
+                data['data'].append(
+                    {"year": year, "subsidy_dollars": total_subsidy}
+                )
+            data['description'] = data['description'].format('Oregon')
+            data.update({
+                'rows': len(years),
+                'region': 'Oregon (Statewide)',
+            })
+        return Response(data)
+
+
 class SubsidyDollarsTopFiveCounties(APIView):
     """
     Top five counties plus Oregon (statewide) subsidy summed over all
-    commodities. (Section E)
+    commodities.
     """
     def get(self, request, format=None):
         cache_lookups()
@@ -430,7 +506,7 @@ class SubsidyDollarsTopFiveCounties(APIView):
             filter(year=latest_year)
         subs_c = Counter()
         for subs in qs:
-            region = fips_to_region[subs.fips]
+            region = fips_to_region[subs.fips]['region']
             subs_c[region] = subs_c.get(region, 0) + subs.subsidy_dollars
         top_six_comm = dict(subs_c.most_common(6))
         data['data'].append(top_six_comm)
@@ -439,7 +515,7 @@ class SubsidyDollarsTopFiveCounties(APIView):
 
 class SubsidyDollarsTopFiveCommodities(APIView):
     """
-    Top five commodities subsidy summed over all counties. (Section D)
+    Top five commodities subsidy summed over all counties.
     """
     def get(self, request, format=None):
         cache_lookups()
@@ -460,6 +536,33 @@ class SubsidyDollarsTopFiveCommodities(APIView):
             subs_c[subs.commodity] = subs_c.get(subs.commodity, 0) + subs.subsidy_dollars
         top_five_comm = dict(subs_c.most_common(5))
         data['data'].append(top_five_comm)
+        return Response(data)
+
+
+class CropDiversityList(APIView):
+    """
+    List crop diversity scores for Oregon counties, and average score over all counties.
+    """
+    def get(self, request, format=None):
+        cache_lookups()
+        # Get the most recent year for subsidy dollars
+        data = {
+            'error': None,
+            'unit': metadata_dict['crop_diversity']['unit'],
+            'description': 'Crop diversity scores for Oregon counties',
+            'average_diversity_score': None,
+            'data': []
+        }
+        total_div_score = 0
+        total_counties = 0
+        diversity_dict = {}
+        for fips, value in fips_to_region.items():
+            if fips != 41000:
+                total_div_score += value['crop diversity score']
+                total_counties += 1
+                diversity_dict[value['region']] = value['crop diversity score']
+        data['average_diversity_score'] = total_div_score / total_counties
+        data['data'].append(diversity_dict)
         return Response(data)
 
 
