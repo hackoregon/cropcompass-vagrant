@@ -22,6 +22,7 @@ urlpatterns = [
     url(r'^$', views.EndpointIndexView.as_view(), name='endpoint_index'),
     url(r'^list/$', views.EndpointIndexView.as_view(), name='endpoint_index'),
     url(r'^metadata/$', views.MetadataView.as_view(), name='metadata'),
+    url(r'^table/county_stats/$', views.CountyStatisticsList.as_view(), name='county_stats'),
     url(r'^data/nass_animals_sales/$', views.NassAnimalsSalesList.as_view(), name='nass_animals_sales'),
     url(r'^data/subsidy_dollars/$', views.SubsidyDollarsList.as_view(), name='subsidy_dollars_data'),
     url(r'^data/subsidy_recipients/$', views.SubsidyRecipientsList.as_view(), name='subsidy_recipients_data'),

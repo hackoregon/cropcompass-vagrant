@@ -63,6 +63,32 @@ METADATA_FIELDS = (
 )
 
 
+def mean_stddev(items):
+    from math import sqrt
+    """
+    Calculate the mean and population standard deviation of items list.
+    Return the (<mean>, <stddev>) tuple
+    """
+    mean = sum(items) / len(items)
+    sum_squared_diffs = sum([(item - mean) ** 2 for item in items])
+    return (mean, sqrt(sum_squared_diffs / len(items)))
+
+
+def grade(mean, stddev, item):
+    """
+    Return a grade (relative position) for an item among a list of items.
+    """
+    if item < mean - 2 * stddev:
+        return "very low"
+    if item < mean - stddev:
+        return "low"
+    if item < mean + stddev:
+        return "moderate"
+    if item < mean + 2 * stddev:
+        return "high"
+    return "very high"
+
+
 def cache_lookups():
         if not metadata_dict:
             fetch_metadata(Metadata)
@@ -167,6 +193,7 @@ query parameter to get JSON response.
         """
         endpoints = [
             ('List metadata for DB tables', 'metadata'),
+            ('County statistics - table view', 'county_stats'),
             ('List commodities by area - row view', 'nass_commodity_area_list'),
             ('List commodities by area - table view', 'nass_commodity_area_table'),
             ('List commodities by number of farms - row view', 'nass_commodity_farms_list'),
@@ -576,3 +603,92 @@ class SubsidyRecipientsList(FilteredListView):
     """
     model = SubsidyRecipients
     serializer = SubsidyRecipientsSerializerWrapped
+
+
+class CountyStatisticsList(APIView):
+    """
+    List bucketed statistics, county name, fips for all Oregon counties. Table
+    values are summed over all commodities in the selected year, which is the
+    most recent year available, unless year is specified as a query parameter.
+    """
+
+    @staticmethod
+    def find_stats(fips_no_or, year, model, value_field):
+        """
+        Return a {fips: grade} dictionary, mean, stddev for a dataset (model)
+        in a given year.
+        """
+        qs = model.objects.filter(year=year)
+        items = []
+        value_field_sum_key = value_field + "__sum"
+        for f in fips_no_or:
+            item = qs.filter(fips=f).aggregate(Sum(value_field))[value_field_sum_key]
+            # If the Sum() returned None, change it to zero.
+            if item is None:
+                item = 0
+            else:
+                # This type conversion is needed for DecimalField type data
+                item = float(item)
+            items.append(item)
+        mean, stddev = mean_stddev(items)
+        grades = {}
+        for idx, f in enumerate(fips_no_or):
+            grades[f] = grade(mean, stddev, items[idx])
+        return (grades, mean, stddev)
+
+    def get(self, request, format=None):
+        cache_lookups()
+        # Check for requested year
+        year_qp = request.query_params.get('year', None)
+        data = {
+            'error': None,
+            'description': 'Bucketed statistics, county name, fips for Oregon counties',
+            'stats': {},
+            'data': []
+        }
+        if year_qp is None:
+            # The most recent year for SubsidyDollars will be used for all stats
+            year = get_most_recent_year(SubsidyDollars)
+        else:
+            year = year_qp
+        data['year'] = year
+
+        results = {}
+        # List of fips (integer) for all counties; excludes Oregon (statewide)
+        fips_no_or = [f for f in fips_to_region.keys() if f > 41000]
+        # Crop Diversity stats
+        items = [fips_to_region[f]['crop diversity score'] for f in fips_no_or]
+        mean, stddev = mean_stddev(items)
+        data['stats']['cropDiversity'] = {'mean': mean, 'stddev': stddev}
+        grades = {}
+        for idx, f in enumerate(fips_no_or):
+            grades[f] = grade(mean, stddev, items[idx])
+        results['cropDiversity'] = grades
+        # Subsidy Dollars stats
+        stats, mean, stddev = self.find_stats(fips_no_or, year, SubsidyDollars, 'subsidy_dollars')
+        results['subsidyLevel'] = stats
+        data['stats']['subsidyLevel'] = {'mean': mean, 'stddev': stddev}
+        # Subsidy Recipients stats
+        stats, mean, stddev = self.find_stats(fips_no_or, year, SubsidyRecipients, 'subsidy_recipients')
+        results['subsidyRecipients'] = stats
+        data['stats']['subsidyRecipients'] = {'mean': mean, 'stddev': stddev}
+        # NASS Commodity Farms stats
+        stats, mean, stddev = self.find_stats(fips_no_or, year, NassCommodityFarms, 'farms')
+        results['numberOfFarms'] = stats
+        data['stats']['numberOfFarms'] = {'mean': mean, 'stddev': stddev}
+        # NASS Commodity Area (Production) stats
+        stats, mean, stddev = self.find_stats(fips_no_or, year, NassCommodityArea, 'acres')
+        results['cropProduction'] = stats
+        data['stats']['cropProduction'] = {'mean': mean, 'stddev': stddev}
+        for fips in fips_no_or:
+            stats_dict = {}
+            stats_dict['subsidyLevel'] = results['subsidyLevel'][fips]
+            stats_dict['subsidyRecipients'] = results['subsidyRecipients'][fips]
+            stats_dict['numberOfFarms'] = results['numberOfFarms'][fips]
+            stats_dict['cropProduction'] = results['cropProduction'][fips]
+            stats_dict['cropDiversity'] = results['cropDiversity'][fips]
+            stats_dict['fips'] = fips
+            stats_dict['county'] = fips_to_region[fips]['region']
+            data['data'].append(stats_dict)
+        data['rows'] = len(data['data'])
+        return Response(data)
