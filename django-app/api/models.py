@@ -30,6 +30,20 @@ class ExportsByCountryRaw(models.Model):
         db_table = 'exports_by_country_raw'
 
 
+class ExportsHistoricalCleaned(models.Model):
+    commodity = models.CharField(max_length=120, blank=True, null=True)
+    value_num = models.DecimalField(max_digits=65535, decimal_places=65535, blank=True, null=True)
+    hs_cat_lvl_1 = models.CharField(max_length=120, blank=True, null=True)
+    hs_cat_lvl_2 = models.CharField(max_length=120, blank=True, null=True)
+    time_month = models.IntegerField(blank=True, null=True)
+    time_year = models.IntegerField(blank=True, null=True)
+    hs_code = models.CharField(max_length=50, blank=True, null=True)
+
+    class Meta:
+        managed = False
+        db_table = 'exports_historical_cleaned'
+
+
 class ExportsHistoricalCleanedAnnualTotals(models.Model):
     commodity = models.CharField(max_length=64, blank=True, null=True)
     time = models.CharField(max_length=64, blank=True, null=True)
