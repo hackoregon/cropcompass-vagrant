@@ -33,6 +33,7 @@ from .models import (
     NassCommodityArea,
     NassCommodityFarms,
     OainHarvestAcres,
+    ExportsHistoricalCleaned,
 )
 from .serializers import (
     MetadataSerializerWrapped,
@@ -206,6 +207,8 @@ query parameter to get JSON response.
             ('Subsidy Dollars - top 5 commodities', 'subsidy_dollars_top_commodities'),
             ('Subsidy Recipients - row view', 'subsidy_recipients_data'),
             ('Crop Diversity - row view', 'crop_diversity_data'),
+            ('Oregon Exports - timeline view', 'oregon_exports_timeline'),
+            ('Oregon Export Commodities - list view', 'oregon_export_commodities'),
         ]
         endpoint_dict = OrderedDict()
         for endpoint_name, path in endpoints:
@@ -691,4 +694,82 @@ class CountyStatisticsList(APIView):
             stats_dict['county'] = fips_to_region[fips]['region']
             data['data'].append(stats_dict)
         data['rows'] = len(data['data'])
+        return Response(data)
+
+
+class OregonExportsTimeline(APIView):
+    """
+    Table of Oregon state (year -> export) for a selected commodity.
+
+    By default returns total export for all commodities. Add query parameter
+    "commodity" to get data for a specific commodity.
+
+    Example:
+    /table/oregon_exports_timeline/?commodity=Quinoa
+    """
+
+    def get(self, request, format=None):
+        # Fetch metadata and region lookup tables from database if necessary
+        cache_lookups()
+        data = {
+            'error': None,
+            'data': []
+        }
+        qs = ExportsHistoricalCleaned.objects.all()
+        commodity = request.query_params.get('commodity', None)
+        if commodity:
+            top_qs = qs.filter(commodity=commodity)
+            # Build a list of unique sorted years
+            years_set = set(top_qs.values_list('time_year', flat=True))
+            years = sorted(list(years_set))
+            for year in years:
+                qs = top_qs.filter(time_year=year)
+                export = qs.aggregate(Sum('value_num'))['value_num__sum']
+                data['data'].append(
+                    {"year": year, "export": export}
+                )
+            data.update({
+                'rows': len(years),
+                'commodity': commodity,
+                'description': 'Oregon exports of {} in each year'.format(commodity),
+            })
+        # If no commodity is specified, return Oregon total export
+        else:
+            years_set = set(qs.values_list('time_year', flat=True))
+            years = sorted(list(years_set))
+            for year in years:
+                new_qs = qs.filter(time_year=year)
+                export = new_qs.aggregate(Sum('value_num'))['value_num__sum']
+                data['data'].append(
+                    {"year": year, "export": export}
+                )
+            data.update({
+                'rows': len(years),
+                'commodity': 'All',
+                'description': 'Oregon total exports in each year',
+            })
+        return Response(data)
+
+
+class OregonExportCommodities(APIView):
+    """
+    List of Oregon export commodities. Choose from this list to filter the
+    exports timeline.
+
+    Example:
+    /table/oregon_export_commodities/
+    """
+
+    def get(self, request, format=None):
+        # Fetch metadata and region lookup tables from database if necessary
+        cache_lookups()
+        data = {
+            'error': None,
+            'description': 'List of Oregon export commodities',
+            'data': []
+        }
+        qs = ExportsHistoricalCleaned.objects.values_list('commodity', flat=True)
+        commodities = sorted(list(set(qs)))
+        data['data'].extend(commodities)
+        data['rows'] = len(commodities)
         return Response(data)

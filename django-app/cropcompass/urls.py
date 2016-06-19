@@ -36,4 +36,6 @@ urlpatterns = [
     url(r'^table/subsidy_dollars_top5fips/$', views.SubsidyDollarsTopFiveCounties.as_view(), name='subsidy_dollars_top_counties'),
     url(r'^table/subsidy_dollars_top5crops/$', views.SubsidyDollarsTopFiveCommodities.as_view(), name='subsidy_dollars_top_commodities'),
     url(r'^data/crop_diversity/$', views.CropDiversityList.as_view(), name='crop_diversity_data'),
+    url(r'^table/oregon_exports_timeline/$', views.OregonExportsTimeline.as_view(), name='oregon_exports_timeline'),
+    url(r'^table/oregon_export_commodities/$', views.OregonExportCommodities.as_view(), name='oregon_export_commodities'),
 ]
