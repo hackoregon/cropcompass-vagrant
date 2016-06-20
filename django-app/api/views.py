@@ -34,6 +34,7 @@ from .models import (
     NassCommodityFarms,
     OainHarvestAcres,
     ExportsHistoricalCleaned,
+    RawOainData,
 )
 from .serializers import (
     MetadataSerializerWrapped,
@@ -210,6 +211,7 @@ query parameter to get JSON response.
             ('Oregon Exports - timeline view', 'oregon_exports_timeline'),
             ('Oregon Export Commodities - list view', 'oregon_export_commodities'),
             ('Oregon Top 5 Export Commodities - list view', 'oregon_exports_top_commodities'),
+            ('Production and Revenue - list view', 'production_and_revenue'),
         ]
         endpoint_dict = OrderedDict()
         for endpoint_name, path in endpoints:
@@ -778,7 +780,8 @@ class OregonExportCommodities(APIView):
 
 class ExportsTopFiveCommodities(APIView):
     """
-    Top five exported commodities from Oregon in a year (default 2016, unless specified).
+    Top five exported commodities from Oregon in a year (default 2016).
+    A year may be specified in query parameters.
     """
     def get(self, request, format=None):
         cache_lookups()
@@ -801,4 +804,65 @@ class ExportsTopFiveCommodities(APIView):
             export = float(qs.filter(commodity=c).aggregate(Sum('value_num'))['value_num__sum'])
             exports.append((export, c))
         data['data'].extend(sorted(exports, reverse=True)[:5])
+        return Response(data)
+
+
+class ProductionAndRevenue(APIView):
+    """
+    Produced value and revenue by county, crop and year in Oregon.
+    """
+    @staticmethod
+    def fix_fields(row):
+        commodity = row['commodity'].split('-')[1].strip().capitalize()
+        value_prod = float(row['value_produced'].strip('$').replace(',', ''))
+        value_sales = float(row['value_sales'].strip('$').replace(',', ''))
+        # Convert cents to $ using this multiplier
+        if row['price_unit_of_measure'] is None:
+            price_unit_mult = 0
+        elif row['price_unit_of_measure'].find('CTS/'):
+            price_unit_mult = 0.01
+        else:
+            price_unit_mult = 1
+        return (commodity, value_prod, value_sales, price_unit_mult)
+
+    def get(self, request, format=None):
+        cache_lookups()
+        # Pick the year for the export data set
+        # year = request.query_params.get('year', '2016')
+        data = {
+            'error': None,
+            'description': 'Produced value and revenue by county, crop and year in Oregon',
+            'data': []
+        }
+        fields = [
+            'commodity',
+            'county',
+            'year',
+            'production_unit',
+            'value_produced',
+            'value_sales',
+            'price_unit_of_measure'
+        ]
+        oain = RawOainData.objects.exclude(production_unit=0, price_unit_of_measure__isnull=True).values(*fields)
+        # rev_dict holds all data returned by the endpoint
+        rev_dict = {}
+        for row in oain:
+            county = row['county']
+            year = row['year']
+            prod_unit = row['production_unit']
+            commodity, value_prod, value_sales, price_unit_mult = self.fix_fields(row)
+            # Calculate the produced value and revenue
+            produced_value = prod_unit * value_prod * price_unit_mult
+            revenue = prod_unit * value_sales * price_unit_mult
+            # Add to rev_dict
+            if county not in rev_dict:
+                rev_dict[county] = {}
+            if commodity not in rev_dict[county]:
+                rev_dict[county][commodity] = {}
+            rev_dict[county][commodity][year] = {
+                "Produced value": produced_value,
+                "Revenue": revenue
+            }
+        data['rows'] = len(rev_dict)
+        data['data'].append(rev_dict)
         return Response(data)
