@@ -184,6 +184,27 @@ class OainHarvestAcres(models.Model):
         db_table = 'oain_harvest_acres'
 
 
+class RawOainData(models.Model):
+    commodity = models.CharField(max_length=128, blank=True, null=True)
+    county = models.CharField(max_length=64, blank=True, null=True)
+    year = models.IntegerField(blank=True, null=True)
+    harvest_units = models.IntegerField(blank=True, null=True)
+    yield_unit = models.CharField(max_length=32, blank=True, null=True)
+    production_unit = models.IntegerField(blank=True, null=True)
+    price_unit = models.CharField(max_length=32, blank=True, null=True)
+    value_produced = models.CharField(max_length=64, blank=True, null=True)
+    percent_sold = models.IntegerField(blank=True, null=True)
+    value_sales = models.CharField(max_length=64, blank=True, null=True)
+    harvest_unit_of_measure = models.CharField(max_length=32, blank=True, null=True)
+    yield_unit_of_measure = models.CharField(max_length=32, blank=True, null=True)
+    production_unit_of_measure = models.CharField(max_length=32, blank=True, null=True)
+    price_unit_of_measure = models.CharField(max_length=32, blank=True, null=True)
+
+    class Meta:
+        managed = False
+        db_table = 'raw_oain_data'
+
+
 class RegionLookup(models.Model):
     st_code = models.IntegerField(blank=True, null=True)
     state = models.CharField(max_length=2, blank=True, null=True)
