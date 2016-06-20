@@ -852,8 +852,8 @@ class ProductionAndRevenue(APIView):
             prod_unit = row['production_unit']
             commodity, value_prod, value_sales, price_unit_mult = self.fix_fields(row)
             # Calculate the produced value and revenue
-            produced_value = prod_unit * value_prod * price_unit_mult
-            revenue = prod_unit * value_sales * price_unit_mult
+            produced_value = 1000 * value_prod
+            revenue = 1000 * value_sales
             # Add to rev_dict
             if county not in rev_dict:
                 rev_dict[county] = {}
