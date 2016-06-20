@@ -209,6 +209,7 @@ query parameter to get JSON response.
             ('Crop Diversity - row view', 'crop_diversity_data'),
             ('Oregon Exports - timeline view', 'oregon_exports_timeline'),
             ('Oregon Export Commodities - list view', 'oregon_export_commodities'),
+            ('Oregon Top 5 Export Commodities - list view', 'oregon_exports_top_commodities'),
         ]
         endpoint_dict = OrderedDict()
         for endpoint_name, path in endpoints:
@@ -772,4 +773,32 @@ class OregonExportCommodities(APIView):
         commodities = sorted(list(set(qs)))
         data['data'].extend(commodities)
         data['rows'] = len(commodities)
+        return Response(data)
+
+
+class ExportsTopFiveCommodities(APIView):
+    """
+    Top five exported commodities from Oregon in a year (default 2016, unless specified).
+    """
+    def get(self, request, format=None):
+        cache_lookups()
+        # Pick the year for the export data set
+        year = request.query_params.get('year', '2016')
+        data = {
+            'error': None,
+            'year': year,
+            'description': 'Top five exported commodities from Oregon in {}'.format(year),
+            'data': []
+        }
+        comms_qs = ExportsHistoricalCleaned.objects.values_list('commodity', flat=True)
+        commodities = sorted(list(set(comms_qs)))
+        qs = ExportsHistoricalCleaned.objects.filter(time_year=year)
+        exports = []
+        for c in commodities:
+            qs_count = qs.filter(commodity=c).count()
+            if qs_count == 0:
+                continue
+            export = float(qs.filter(commodity=c).aggregate(Sum('value_num'))['value_num__sum'])
+            exports.append((export, c))
+        data['data'].extend(sorted(exports, reverse=True)[:5])
         return Response(data)

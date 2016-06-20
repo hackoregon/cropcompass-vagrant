@@ -38,4 +38,5 @@ urlpatterns = [
     url(r'^data/crop_diversity/$', views.CropDiversityList.as_view(), name='crop_diversity_data'),
     url(r'^table/oregon_exports_timeline/$', views.OregonExportsTimeline.as_view(), name='oregon_exports_timeline'),
     url(r'^table/oregon_export_commodities/$', views.OregonExportCommodities.as_view(), name='oregon_export_commodities'),
+    url(r'^table/oregon_exports_top5crops/$', views.ExportsTopFiveCommodities.as_view(), name='oregon_exports_top_commodities'),
 ]
